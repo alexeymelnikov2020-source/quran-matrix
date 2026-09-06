@@ -150,21 +150,6 @@
     }
     .topbar-info { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
     .topbar-controls { display: flex; align-items: center; gap: 12px; }
-    .import-btn {
-      background: var(--emerald);
-      color: #000;
-      border: none;
-      padding: 7px 14px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: var(--transition);
-    }
-    .import-btn:hover { background: #059669; color: #fff; }
     .topbar-status {
       display: flex;
       align-items: center;
@@ -282,23 +267,18 @@
     </div>
     <ul class="nav-list" id="surasNavList"></ul>
     <div class="sidebar-footer">
-      <span id="loadedCount">Загружено: 0 / 114</span>
-      <span>Чистый каркас v3.3</span>
+      <span id="loadedCount">Загрузка данных...</span>
+      <span>GitHub Auto-Sync v3.4</span>
     </div>
   </aside>
 
   <main class="main-viewport">
     <header class="topbar">
-      <div class="topbar-info" id="topbarIndicator">Оболочка готова к импорту данных</div>
+      <div class="topbar-info" id="topbarIndicator">Автоматическая синхронизация с облаком...</div>
       <div class="topbar-controls">
-        <input type="file" id="sprintFileInput" accept=".json" style="display: none;">
-        <button class="import-btn" onclick="document.getElementById('sprintFileInput').click()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <span>Импорт спринта (.json)</span>
-        </button>
         <div class="topbar-status">
           <div class="status-dot"></div>
-          <span id="systemStatusText">Каркас активен</span>
+          <span id="systemStatusText">Загрузка спринтов</span>
         </div>
       </div>
     </header>
@@ -423,25 +403,55 @@
       { id: 114, name: "Ан-Нас", ru: "Люди", ayats: 6 }
     ];
 
-    // ЧИСТОЕ ХРАНИЛИЩЕ ДАННЫХ (БЕЗ ЗАШИТЫХ СУР)
     let surasDetailedData = {};
-
-    // Загрузка из LocalStorage при наличии
-    try {
-      const saved = localStorage.getItem('quran_matrix_store');
-      if (saved) {
-        surasDetailedData = JSON.parse(saved);
-      }
-    } catch(e) {
-      console.warn("Storage error:", e);
-    }
-
     const navListEl = document.getElementById('surasNavList');
     let currentSuraId = 1;
 
+    // Автоматическая загрузка всех 18 спринтов с GitHub
+    async function autoLoadSprints() {
+      const sprintFiles = [
+        "sprint_01_suras_1_4.json",
+        "sprint_02_suras_5_7.json",
+        "sprint_03_suras_8_10.json",
+        "sprint_04_suras_11_13.json",
+        "sprint_05_suras_14_16.json",
+        "sprint_06_suras_17_19.json",
+        "sprint_07_suras_20_22.json",
+        "sprint_08_suras_23_27.json",
+        "sprint_09_suras_28_32.json",
+        "sprint_10_suras_33_36.json",
+        "sprint_11_suras_37_42.json",
+        "sprint_12_suras_43_46.json",
+        "sprint_13_suras_47_57.json",
+        "sprint_14_suras_58_68.json",
+        "sprint_15_suras_69_72.json",
+        "sprint_16_suras_73_78.json",
+        "sprint_17_suras_79_90.json",
+        "sprint_18_suras_91_114.json"
+      ];
+
+      let loadedCount = 0;
+      for (let file of sprintFiles) {
+        try {
+          const res = await fetch(file);
+          if (res.ok) {
+            const data = await res.json();
+            Object.assign(surasDetailedData, data);
+            loadedCount++;
+          }
+        } catch (e) {
+          console.warn("Не удалось подгрузить файл:", file);
+        }
+      }
+
+      renderSidebar();
+      loadSura(currentSuraId);
+      document.getElementById('topbarIndicator').innerText = `Матрица синхронизирована (Спринтов загружено: ${loadedCount}/18)`;
+    }
+
     function updateStats() {
       const count = Object.keys(surasDetailedData).length;
-      document.getElementById('loadedCount').innerText = `Загружено: ${count} / 114`;
+      document.getElementById('loadedCount').innerText = `Интегрировано сур: ${count} / 114`;
       document.getElementById('systemStatusText').innerText = count > 0 ? `Активно сур: ${count}` : 'Каркас пуст';
     }
 
@@ -521,13 +531,10 @@
             </div>
           </div>
           <div class="empty-state">
-            <div class="empty-title">Данные этой суры еще не импортированы</div>
+            <div class="empty-title">Данные этой суры еще загружаются или отсутствуют</div>
             <p class="empty-desc">
-              Этот слот чист. Нажмите кнопку <strong>«Импорт спринта (.json)»</strong> в правом верхнем углу и выберите файл с деконструкцией сур, чтобы заполнить матрицу.
+              Система автоматически опрашивает облачный сервер GitHub для извлечения канонических файлов спринтов.
             </p>
-            <button class="import-btn" style="margin: 0 auto;" onclick="document.getElementById('sprintFileInput').click()">
-              Загрузить спринт
-            </button>
           </div>
         `;
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -624,30 +631,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ИМПОРТ СПРИНТА ЧЕРЕЗ JSON ФАЙЛ
-    document.getElementById('sprintFileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const imported = JSON.parse(evt.target.result);
-          Object.assign(surasDetailedData, imported);
-          localStorage.setItem('quran_matrix_store', JSON.stringify(surasDetailedData));
-          renderSidebar();
-          const firstKey = Object.keys(imported)[0];
-          if (firstKey) {
-            currentSuraId = parseInt(firstKey);
-            loadSura(currentSuraId);
-          }
-          alert(`Успешно импортирован спринт! Загружено сур: ${Object.keys(imported).length}`);
-        } catch(err) {
-          alert('Ошибка чтения файла спринта. Убедитесь, что выбран корректный .json');
-        }
-      };
-      reader.readAsText(file);
-    });
-
     document.getElementById('suraSearch').addEventListener('input', (e) => { renderSidebar(e.target.value); });
     const sidebar = document.getElementById('sidebar');
     document.getElementById('sidebarToggle').addEventListener('click', () => { sidebar.classList.toggle('collapsed'); });
@@ -661,8 +644,8 @@
       });
     }
 
-    renderSidebar();
-    loadSura(1);
+    // Запуск автосинхронизации при открытии сайта
+    autoLoadSprints();
   </script>
 </body>
 </html>
