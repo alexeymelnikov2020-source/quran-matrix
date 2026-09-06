@@ -258,25 +258,21 @@
       }
       .sidebar {
         width: 100% !important;
-        height: auto;
-        max-height: 220px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        max-height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 5px 0 25px rgba(0,0,0,0.5);
       }
-      .sidebar.collapsed {
-        height: 60px;
-        max-height: 60px;
-      }
-      .sidebar.collapsed .brand-group,
-      .sidebar.collapsed .search-box,
-      .sidebar.collapsed .nav-text-group,
-      .sidebar.collapsed .nav-badge,
-      .sidebar.collapsed .sidebar-footer {
-        display: none;
+      .sidebar.mobile-open {
+        transform: translateX(0);
       }
       .main-viewport {
-        height: auto;
-        overflow-y: visible;
+        height: 100vh;
+        overflow-y: auto;
       }
       .content-container {
         padding: 16px 12px 48px 12px;
@@ -312,17 +308,22 @@
     <ul class="nav-list" id="surasNavList"></ul>
     <div class="sidebar-footer">
       <span id="loadedCount">Загрузка данных...</span>
-      <span>GitHub Auto-Sync v3.5</span>
+      <span>GitHub Auto-Sync v3.7</span>
     </div>
   </aside>
 
   <main class="main-viewport">
     <header class="topbar">
-      <div class="topbar-info" id="topbarIndicator">Автоматическая синхронизация с облаком...</div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="toggle-btn" id="mobileMenuBtn" style="display: none;" title="Меню сур">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="topbar-info" id="topbarIndicator">Синхронизация...</div>
+      </div>
       <div class="topbar-controls">
         <div class="topbar-status">
           <div class="status-dot"></div>
-          <span id="systemStatusText">Загрузка спринтов</span>
+          <span id="systemStatusText">Синхронизация</span>
         </div>
       </div>
     </header>
@@ -453,24 +454,12 @@
 
     async function autoLoadSprints() {
       const sprintFiles = [
-        "sprint_01_suras_1_4.json",
-        "sprint_02_suras_5_7.json",
-        "sprint_03_suras_8_10.json",
-        "sprint_04_suras_11_13.json",
-        "sprint_05_suras_14_16.json",
-        "sprint_06_suras_17_19.json",
-        "sprint_07_suras_20_22.json",
-        "sprint_08_suras_23_27.json",
-        "sprint_09_suras_28_32.json",
-        "sprint_10_suras_33_36.json",
-        "sprint_11_suras_37_42.json",
-        "sprint_12_suras_43_46.json",
-        "sprint_13_suras_47_57.json",
-        "sprint_14_suras_58_68.json",
-        "sprint_15_suras_69_72.json",
-        "sprint_16_suras_73_78.json",
-        "sprint_17_suras_79_90.json",
-        "sprint_18_suras_91_114.json"
+        "sprint_01_suras_1_4.json", "sprint_02_suras_5_7.json", "sprint_03_suras_8_10.json",
+        "sprint_04_suras_11_13.json", "sprint_05_suras_14_16.json", "sprint_06_suras_17_19.json",
+        "sprint_07_suras_20_22.json", "sprint_08_suras_23_27.json", "sprint_09_suras_28_32.json",
+        "sprint_10_suras_33_36.json", "sprint_11_suras_37_42.json", "sprint_12_suras_43_46.json",
+        "sprint_13_suras_47_57.json", "sprint_14_suras_58_68.json", "sprint_15_suras_69_72.json",
+        "sprint_16_suras_73_78.json", "sprint_17_suras_79_90.json", "sprint_18_suras_91_114.json"
       ];
 
       let loadedCount = 0;
@@ -489,13 +478,13 @@
 
       renderSidebar();
       loadSura(currentSuraId);
-      document.getElementById('topbarIndicator').innerText = `Матрица синхронизирована (Спринтов загружено: ${loadedCount}/18)`;
+      document.getElementById('topbarIndicator').innerText = `Матрица синхронизирована (${loadedCount}/18)`;
     }
 
     function updateStats() {
       const count = Object.keys(surasDetailedData).length;
-      document.getElementById('loadedCount').innerText = `Интегрировано сур: ${count} / 114`;
-      document.getElementById('systemStatusText').innerText = count > 0 ? `Активно сур: ${count}` : 'Каркас пуст';
+      document.getElementById('loadedCount').innerText = `Интегрировано: ${count} / 114`;
+      document.getElementById('systemStatusText').innerText = count > 0 ? `Активно: ${count}` : 'Пусто';
     }
 
     function renderSidebar(filter = '') {
@@ -516,13 +505,16 @@
               <span class="nav-meta">${sura.ayats} аятов</span>
             </div>
           </div>
-          <span class="nav-badge ${isReady ? 'status-ready' : ''}">${isReady ? 'Интегрировано' : 'Ожидает'}</span>
+          <span class="nav-badge ${isReady ? 'status-ready' : ''}">${isReady ? 'Готово' : 'Ожидание'}</span>
         `;
         li.addEventListener('click', () => {
           currentSuraId = sura.id;
           document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
           li.classList.add('active');
           loadSura(sura.id);
+          if(window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('mobile-open');
+          }
         });
         navListEl.appendChild(li);
       });
@@ -547,10 +539,7 @@
             </div>
           </div>
           <div class="empty-state">
-            <div class="empty-title">Данные этой суры еще загружаются или отсутствуют</div>
-            <p class="empty-desc">
-              Система автоматически опрашивает облачный сервер GitHub для извлечения канонических файлов спринтов.
-            </p>
+            <div class="empty-title">Данные суры загружаются из облака...</div>
           </div>
         `;
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -607,9 +596,15 @@
               <h1>Сура ${meta.id}: ${meta.name} («${meta.ru}»)</h1>
               <div class="sura-header-meta">${data.subtitle} (${meta.ayats} аятов / 7 узлов)</div>
             </div>
+            <div class="header-actions">
+              <button class="action-btn" onclick="toggleSource('source-panel-${meta.id}')">
+                <span>Первоисточник и синтез</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            </div>
           </div>
 
-          <div class="source-panel" id="source-panel-active">
+          <div class="source-panel" id="source-panel-${meta.id}">
             <div class="source-card">
               <div class="section-label">Канонический арабский оригинал</div>
               <div class="arabic-display">${data.arabic}</div>
@@ -638,8 +633,32 @@
     }
 
     document.getElementById('suraSearch').addEventListener('input', (e) => { renderSidebar(e.target.value); });
+    
     const sidebar = document.getElementById('sidebar');
-    document.getElementById('sidebarToggle').addEventListener('click', () => { sidebar.classList.toggle('collapsed'); });
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+    if(window.innerWidth <= 768) {
+      mobileMenuBtn.style.display = 'flex';
+    }
+
+    sidebarToggle.addEventListener('click', () => {
+      if(window.innerWidth <= 768) {
+        sidebar.classList.remove('mobile-open');
+      } else {
+        sidebar.classList.toggle('collapsed');
+      }
+    });
+
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
+    });
+
+    function toggleSource(panelId) { 
+      const p = document.getElementById(panelId); 
+      if (p) p.classList.toggle('open'); 
+    }
+
     function copyPrompt(btn) {
       const pBox = btn.closest('.prompt-box');
       const txt = pBox.querySelector('.prompt-text').innerText;
