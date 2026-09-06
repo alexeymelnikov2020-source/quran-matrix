@@ -190,7 +190,6 @@
       white-space: nowrap;
     }
     .action-btn:hover { border-color: var(--gold); background: var(--gold-glow); }
-    .action-btn.obsidian-btn:hover { border-color: var(--emerald); background: var(--emerald-glow); }
     .source-panel { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
     .source-panel.open { display: block; }
     .source-card { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
@@ -249,6 +248,51 @@
     }
     .empty-title { font-size: 1.1rem; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
     .empty-desc { font-size: 0.9rem; color: var(--text-muted); max-width: 540px; margin: 0 auto 20px auto; }
+
+    /* МОБИЛЬНАЯ АДАПТАЦИЯ (RESPONSIVE) */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+        height: 100vh;
+        overflow: auto;
+      }
+      .sidebar {
+        width: 100% !important;
+        height: auto;
+        max-height: 220px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar.collapsed {
+        height: 60px;
+        max-height: 60px;
+      }
+      .sidebar.collapsed .brand-group,
+      .sidebar.collapsed .search-box,
+      .sidebar.collapsed .nav-text-group,
+      .sidebar.collapsed .nav-badge,
+      .sidebar.collapsed .sidebar-footer {
+        display: none;
+      }
+      .main-viewport {
+        height: auto;
+        overflow-y: visible;
+      }
+      .content-container {
+        padding: 16px 12px 48px 12px;
+      }
+      .sura-header-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .header-actions {
+        width: 100%;
+      }
+      .action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -268,7 +312,7 @@
     <ul class="nav-list" id="surasNavList"></ul>
     <div class="sidebar-footer">
       <span id="loadedCount">Загрузка данных...</span>
-      <span>GitHub Auto-Sync v3.4</span>
+      <span>GitHub Auto-Sync v3.5</span>
     </div>
   </aside>
 
@@ -407,7 +451,6 @@
     const navListEl = document.getElementById('surasNavList');
     let currentSuraId = 1;
 
-    // Автоматическая загрузка всех 18 спринтов с GitHub
     async function autoLoadSprints() {
       const sprintFiles = [
         "sprint_01_suras_1_4.json",
@@ -484,33 +527,6 @@
         navListEl.appendChild(li);
       });
       updateStats();
-    }
-
-    function exportToObsidian(id) {
-      const meta = surasMeta.find(s => s.id === id);
-      const data = surasDetailedData[id];
-      if (!data) return;
-      let md = `# Сура ${meta.id}: ${meta.name} (${meta.ru})\n`;
-      md += `*${data.subtitle}*\n\n`;
-      md += `## Первоисточник\n> ${data.translation}\n\n`;
-      md += `## Архитектурный синтез\n${data.summary}\n\n`;
-      md += `## Системные узлы матрицы\n\n`;
-      data.nodes.forEach(n => {
-        md += `### ${n.badge}: ${n.title}\n`;
-        md += `- **Первоисточник:** \`${n.source}\`\n`;
-        md += `- **Закон реальности:** ${n.law}\n`;
-        md += `- **Протокол реаниматолога:** ${n.medic}\n`;
-        md += `- **Промпт для агента:**\n\`\`\`text\n${n.prompt}\n\`\`\`\n\n`;
-      });
-      md += `## Чек-лист самоаудита\n`;
-      data.checklist.forEach((item, idx) => {
-        md += `- [ ] ${(idx+1).toString().padStart(2, '0')}. ${item}\n`;
-      });
-      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `${meta.id.toString().padStart(2, '0')}_${meta.name}.md`;
-      link.click();
     }
 
     function loadSura(id) {
@@ -591,16 +607,6 @@
               <h1>Сура ${meta.id}: ${meta.name} («${meta.ru}»)</h1>
               <div class="sura-header-meta">${data.subtitle} (${meta.ayats} аятов / 7 узлов)</div>
             </div>
-            <div class="header-actions">
-              <button class="action-btn" onclick="toggleSource('source-panel-active')">
-                <span>Первоисточник и синтез</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <button class="action-btn obsidian-btn" onclick="exportToObsidian(${meta.id})" title="Скачать готовый .md файл">
-                <span>Экспорт в Obsidian (.md)</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              </button>
-            </div>
           </div>
 
           <div class="source-panel" id="source-panel-active">
@@ -634,7 +640,6 @@
     document.getElementById('suraSearch').addEventListener('input', (e) => { renderSidebar(e.target.value); });
     const sidebar = document.getElementById('sidebar');
     document.getElementById('sidebarToggle').addEventListener('click', () => { sidebar.classList.toggle('collapsed'); });
-    function toggleSource(panelId) { const p = document.getElementById(panelId); if (p) p.classList.toggle('open'); }
     function copyPrompt(btn) {
       const pBox = btn.closest('.prompt-box');
       const txt = pBox.querySelector('.prompt-text').innerText;
@@ -644,7 +649,6 @@
       });
     }
 
-    // Запуск автосинхронизации при открытии сайта
     autoLoadSprints();
   </script>
 </body>
