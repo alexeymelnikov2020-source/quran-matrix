@@ -1,413 +1,1551 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Workspace Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Матрица системных протоколов | 114 Сур Корана</title>
   <style>
     :root {
-      --bg-main: #0c0e14;
-      --bg-surface: #141721;
-      --bg-surface-hover: #1c2230;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --accent-color: #3b82f6;
-      --accent-glow: rgba(59, 130, 246, 0.2);
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      
-      --sidebar-collapsed-w: 54px;
-      --sidebar-expanded-w: 220px;
-      --sidebar-mobile-w: 44px;
-      --transition-speed: 0.24s;
+      --bg-base: #090d14;
+      --bg-surface: #0f1523;
+      --bg-card: #151d2e;
+      --bg-hover: #1c273d;
+      --border: #223047;
+      --border-focus: #3b82f6;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.14);
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.12);
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.15);
+      --cyan: #38bdf8;
+      --cyan-glow: rgba(56, 189, 248, 0.15);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+      --code-bg: #0b101b;
+      --font-mono: "Fira Code", Consolas, Monaco, monospace;
+      --sidebar-w: 320px;
+      --transition: 0.24s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      overflow: hidden;
     }
 
     body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
       display: flex;
-      overflow-x: hidden;
-    }
-
-    /* ================= SIDEBAR (DOCK STYLE) ================= */
-    .sidebar-wrapper {
       position: relative;
-      width: var(--sidebar-collapsed-w);
-      flex-shrink: 0;
-      z-index: 100;
     }
 
-    .sidebar {
+    /* ЗОНА ДЕТЕКЦИИ НАВЕДЕНИЯ МЫШИ (ДЕСКТОП) */
+    .edge-sensor {
       position: fixed;
-      top: 0;
       left: 0;
-      bottom: 0;
-      width: var(--sidebar-collapsed-w);
-      background: rgba(18, 21, 30, 0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-right: 1px solid var(--border-color);
+      top: 0;
+      width: 18px;
+      height: 100vh;
+      z-index: 95;
+      display: none;
+      cursor: pointer;
+    }
+    body.is-collapsed .edge-sensor {
+      display: block;
+    }
+
+    /* БОКОВАЯ ПАНЕЛЬ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
+      flex-shrink: 0;
+      transition: width var(--transition), transform var(--transition), box-shadow var(--transition);
+      z-index: 100;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* СВОРАЧИВАНИЕ В ПОЛНЫЙ НОЛЬ НА ДЕСКТОПЕ */
+    .sidebar.collapsed {
+      width: 0 !important;
+      min-width: 0 !important;
+      border-right: none !important;
+      pointer-events: none;
+    }
+
+    /* РЕЖИМ ВСПЛЫТИЯ ПРИ НАВЕДЕНИИ К КРАЮ */
+    .sidebar.peeking {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: var(--sidebar-w) !important;
+      box-shadow: 14px 0 36px rgba(0, 0, 0, 0.7);
+      border-right: 1px solid var(--border) !important;
+      pointer-events: auto !important;
+      z-index: 120;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      padding: 12px 6px;
-      transition: width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                  box-shadow var(--transition-speed) ease;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .brand-group {
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
       white-space: nowrap;
-      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
     }
-
-    /* Раскрытие при наведении на десктопе */
-    @media (hover: hover) and (min-width: 641px) {
-      .sidebar-wrapper:hover .sidebar,
-      .sidebar.pinned {
-        width: var(--sidebar-expanded-w);
-        box-shadow: 12px 0 35px rgba(0, 0, 0, 0.5);
-      }
-      
-      .sidebar-wrapper:hover .nav-label,
-      .sidebar.pinned .nav-label {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    .sidebar-top, .sidebar-bottom {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      width: 100%;
-    }
-
-    .brand-mark {
-      width: 100%;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 9px;
-      margin-bottom: 8px;
-    }
-
-    .brand-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 13px;
-    }
-
     .brand-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      opacity: 0;
-      transform: translateX(-6px);
-      transition: all var(--transition-speed) ease;
-    }
-
-    .sidebar-wrapper:hover .brand-title,
-    .sidebar.pinned .brand-title {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      height: 40px;
-      padding: 0 9px;
-      gap: 12px;
-      border-radius: 8px;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .nav-item:hover {
-      background: var(--bg-surface-hover);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       color: var(--text-main);
     }
-
-    .nav-item.active {
-      background: var(--accent-glow);
-      color: var(--accent-color);
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--text-dim);
     }
 
-    .nav-icon {
-      width: 22px;
-      height: 22px;
-      flex-shrink: 0;
-      display: flex;
+    .icon-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .icon-btn:hover {
+      color: #fff;
+      border-color: var(--emerald);
+      background: var(--bg-hover);
     }
 
-    .nav-icon svg {
-      width: 18px;
-      height: 18px;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
-
-    .nav-label {
-      font-size: 13px;
-      font-weight: 500;
-      opacity: 0;
-      transform: translateX(-8px);
-      transition: opacity var(--transition-speed) ease,
-                  transform var(--transition-speed) ease;
-    }
-
-    /* ================= MAIN WORKSPACE ================= */
-    .main-content {
-      flex: 1;
-      width: calc(100% - var(--sidebar-collapsed-w));
-      padding: 24px;
-      overflow-y: auto;
-    }
-
-    .content-header {
-      margin-bottom: 24px;
-    }
-
-    .page-title {
-      font-size: 24px;
+    .manifest-sidebar-btn {
+      margin: 10px 12px 4px 12px;
+      padding: 10px 14px;
+      background: var(--purple-glow);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 8px;
+      color: #e9d5ff;
+      font-size: 0.84rem;
       font-weight: 700;
-      color: var(--text-main);
-      letter-spacing: -0.02em;
-    }
-
-    .page-subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    /* Сетка плашек */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      width: 100%;
-    }
-
-    .card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
+      cursor: pointer;
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .manifest-sidebar-btn:hover, .manifest-sidebar-btn.active {
+      background: #9333ea;
+      color: #fff;
+      border-color: #a855f7;
     }
 
-    .card:hover {
-      border-color: rgba(255, 255, 255, 0.16);
-      transform: translateY(-2px);
+    .btn-glossary {
+      margin: 4px 12px 8px 12px;
+      background: var(--cyan-glow);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #bae6fd;
+    }
+    .btn-glossary:hover, .btn-glossary.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
     }
 
-    .card-head {
+    .search-box {
+      padding: 8px 12px 10px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      outline: none;
+      transition: var(--transition);
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+
+    .nav-list {
+      list-style: none;
+      padding: 8px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .nav-item {
+      padding: 9px 12px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
+    .nav-item.active { background: var(--emerald-glow); border-color: var(--emerald); color: #fff; }
+
+    .nav-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .nav-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--emerald);
+      flex-shrink: 0;
+    }
+    .nav-item.active .nav-num { background: var(--emerald); color: #000; }
+    .nav-text-group { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
+    .nav-name { font-size: 0.84rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+    .nav-meta { font-size: 0.7rem; color: var(--text-dim); }
+    .nav-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      white-space: nowrap;
     }
 
-    .card-title {
-      font-size: 15px;
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    /* ОСНОВНАЯ ОБЛАСТЬ ПРОСМОТРА */
+    .main-viewport {
+      flex-grow: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .topbar {
+      padding: 10px 20px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      gap: 12px;
+      min-height: 58px;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .topbar-info {
+      font-size: 0.88rem;
       font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--emerald);
+      background: var(--emerald-glow);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald);
     }
 
-    .card-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text-muted);
+    .content-container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 20px 60px 20px;
+      width: 100%;
+      min-width: 0;
     }
 
-    .card-body {
-      font-size: 13px;
+    /* СУРА БАННЕР */
+    .sura-banner {
+      background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-card) 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+    .sura-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .sura-header-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .sura-header-meta {
+      font-size: 0.9rem;
+      color: var(--gold);
+      font-weight: 500;
+    }
+    .header-actions { display: flex; gap: 8px; }
+
+    .action-btn {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .action-btn:hover { border-color: var(--gold); background: var(--gold-glow); }
+
+    .source-panel {
+      display: none;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .source-panel.open { display: block; }
+    .source-card {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .arabic-display {
+      font-size: 1.35rem;
+      line-height: 2.1;
+      direction: rtl;
+      text-align: right;
+      color: #f8fafc;
+      font-family: "Amiri", "Traditional Arabic", serif;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+    .translation-display {
+      font-size: 0.92rem;
       color: var(--text-muted);
+      border-left: 2px solid var(--gold);
+      padding-left: 12px;
+      word-break: break-word;
+    }
+    .summary-display {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    /* УЗЛЫ И КАРТОЧКИ */
+    .nodes-container { display: flex; flex-direction: column; gap: 16px; }
+    .node-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .node-card:hover { border-color: var(--border-focus); }
+    .node-header {
+      padding: 14px 18px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .node-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .node-badge {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      color: var(--emerald);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .node-title {
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .node-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .node-ayat-source {
+      background: var(--code-bg);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.84rem;
+    }
+    .node-ayat-source summary {
+      cursor: pointer;
+      color: var(--text-dim);
+      font-weight: 600;
+      outline: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .node-ayat-source summary:hover { color: var(--text-muted); }
+    .node-ayat-content {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      word-break: break-word;
+    }
+
+    .triad-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .triad-cell {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .triad-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .triad-cell.law .triad-header { color: var(--gold); }
+    .triad-cell.medic .triad-header { color: var(--emerald); }
+    .triad-cell p { font-size: 0.88rem; color: var(--text-main); line-height: 1.5; }
+
+    .prompt-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+    .prompt-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 10px;
+    }
+    .copy-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .copy-btn:hover { color: #fff; border-color: var(--emerald); background: var(--bg-hover); }
+    .copy-btn.copied { background: var(--emerald); color: #000; font-weight: 700; border-color: var(--emerald); }
+    .prompt-text {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #93c5fd;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.45;
+    }
+
+    .checklist-box {
+      margin-top: 28px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .checklist-box h3 { font-size: 1.05rem; color: var(--gold); margin-bottom: 14px; }
+    .checklist-items { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .checklist-items li { font-size: 0.88rem; display: flex; align-items: flex-start; gap: 12px; color: var(--text-main); }
+    .checklist-idx { color: var(--gold); font-weight: 700; font-family: var(--font-mono); }
+
+    /* ТАБЛИЦА И СКРОЛЛ */
+    .table-scroll-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 14px;
+    }
+    .ikr-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 580px;
+      font-size: 0.86rem;
+    }
+    .ikr-table th {
+      background: var(--bg-surface);
+      color: var(--emerald);
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ikr-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
       line-height: 1.5;
     }
+    .ikr-table tr:last-child td { border-bottom: none; }
+    .param-title { font-weight: 700; color: #fff; margin-bottom: 3px; display: block; }
+    .param-desc { font-size: 0.74rem; color: var(--gold); }
 
-    /* ================= MOBILE ADAPTATION ================= */
-    @media (max-width: 640px) {
-      .sidebar-wrapper {
-        width: var(--sidebar-mobile-w);
-      }
+    /* МАНИФЕСТ И ГЛОССАРИЙ */
+    .manifest-container, .glossary-container {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      animation: fadeIn 0.2s ease;
+    }
+    .manifest-axiom, .glossary-banner {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .glossary-banner {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .manifest-axiom h2, .glossary-banner h1 { font-size: 1.35rem; color: #fff; margin-bottom: 6px; font-weight: 700; }
+    .manifest-axiom p { font-size: 0.92rem; color: #f1f5f9; line-height: 1.6; }
+    .glossary-banner p { font-size: 0.92rem; color: #bae6fd; line-height: 1.6; }
 
+    .full-prompt-card { background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+    .full-prompt-text {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #93c5fd;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+      max-height: 480px;
+      overflow-y: auto;
+      padding: 12px;
+      background: rgba(0,0,0,0.35);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .explanation-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+    .exp-item { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .exp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
+    .exp-title { font-size: 0.92rem; font-weight: 700; color: var(--emerald); }
+    .exp-law { font-size: 0.72rem; font-weight: 600; color: var(--gold); padding: 2px 8px; background: rgba(245, 158, 11, 0.1); border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.3); white-space: nowrap; }
+    .exp-body { font-size: 0.86rem; color: var(--text-main); line-height: 1.55; }
+
+    .glossary-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-chip:hover, .filter-chip.active { background: rgba(56, 189, 248, 0.2); color: #fff; border-color: #38bdf8; }
+
+    .glossary-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .glossary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: border-color var(--transition); }
+    .glossary-card:hover { border-color: #38bdf8; }
+    .glossary-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 12px; }
+    .glossary-term-group { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .glossary-term { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .glossary-arabic { font-family: "Amiri", "Traditional Arabic", serif; font-size: 1.25rem; color: var(--gold); direction: rtl; }
+    .glossary-literal { font-size: 0.78rem; color: var(--text-dim); font-style: italic; }
+    .glossary-cat-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      white-space: nowrap;
+    }
+    .glossary-meaning { font-size: 0.88rem; color: var(--text-main); line-height: 1.55; margin-bottom: 10px; }
+    .glossary-law-box {
+      background: var(--code-bg);
+      border-left: 3px solid var(--emerald);
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      line-height: 1.45;
+    }
+    .glossary-law-box strong { color: var(--emerald); }
+
+    /* ЗАТЕМНЕНИЕ ФОНА (МОБИЛЬНАЯ ВЕРСИЯ) */
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 12, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    /* АДАПТИВНОСТЬ (МОБИЛЬНЫЕ И ПЛАНШЕТЫ) */
+    @media (max-width: 768px) {
+      .edge-sensor { display: none !important; }
       .sidebar {
-        width: var(--sidebar-mobile-w);
-        padding: 8px 3px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 300px !important;
+        max-width: 86vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        box-shadow: none;
+        z-index: 110;
+      }
+      .sidebar.mobile-open {
+        transform: translateX(0) !important;
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.85);
+      }
+      .sidebar.collapsed {
+        width: 300px !important;
+        transform: translateX(-100%) !important;
+      }
+      .mobile-backdrop.active {
+        display: block;
+        opacity: 1;
       }
 
-      .brand-mark {
-        padding: 0 4px;
-        justify-content: center;
+      .topbar {
+        padding: 10px 14px;
+        min-height: 52px;
       }
+      .topbar-info { font-size: 0.82rem; }
+      .topbar-status span { display: none; }
+      .topbar-status { padding: 6px; border-radius: 50%; }
 
-      .brand-title, .nav-label {
-        display: none !important;
+      .content-container {
+        padding: 14px 12px 48px 12px;
       }
-
-      .nav-item {
-        padding: 0;
-        justify-content: center;
-        height: 38px;
+      .sura-banner {
+        padding: 16px;
+        margin-bottom: 16px;
       }
-
-      .main-content {
-        width: calc(100% - var(--sidebar-mobile-w));
-        padding: 16px 12px;
-      }
-
-      .cards-grid {
-        grid-template-columns: 1fr;
+      .sura-header-row {
+        flex-direction: column;
         gap: 12px;
       }
-
-      .card {
-        padding: 16px;
+      .sura-header-title h1 {
+        font-size: 1.25rem;
       }
+      .header-actions {
+        width: 100%;
+      }
+      .header-actions .action-btn {
+        flex: 1;
+        justify-content: center;
+      }
+      .triad-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .node-header {
+        padding: 12px 14px;
+      }
+      .node-body {
+        padding: 14px;
+      }
+      .node-title {
+        white-space: normal;
+      }
+      .arabic-display {
+        font-size: 1.15rem;
+        line-height: 1.9;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-  <!-- БОКОВАЯ СМАРТ-ПАНЕЛЬ (DOCK) -->
-  <aside class="sidebar-wrapper" id="sidebarWrapper">
-    <nav class="sidebar" id="sidebar">
-      
-      <div class="sidebar-top">
-        <div class="brand-mark">
-          <div class="brand-icon">S</div>
-          <span class="brand-title">Workspace</span>
-        </div>
+  <!-- Зона детекции мыши у левого края экрана (для мгновенного раскрытия из нуля) -->
+  <div class="edge-sensor" id="edgeSensor" title="Подведите мышь для открытия меню"></div>
 
-        <button class="nav-item active" title="Главная">
-          <div class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          </div>
-          <span class="nav-label">Консоль</span>
-        </button>
+  <!-- Оверлей затемнения для мобильных -->
+  <div class="mobile-backdrop" id="mobileBackdrop"></div>
 
-        <button class="nav-item" title="Проекты">
-          <div class="nav-icon">
-            <svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-          </div>
-          <span class="nav-label">Проекты</span>
-        </button>
-
-        <button class="nav-item" title="Задачи">
-          <div class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          </div>
-          <span class="nav-label">Задачи</span>
-        </button>
-
-        <button class="nav-item" title="Аналитика">
-          <div class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-          </div>
-          <span class="nav-label">Аналитика</span>
-        </button>
+  <!-- БОКОВАЯ ПАНЕЛЬ СЕТИ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-group">
+        <span class="brand-title">Коранический код</span>
+        <span class="brand-sub">114 архитектурных модулей</span>
       </div>
+      <button class="icon-btn" id="sidebarToggle" title="Свернуть меню в ноль">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
 
-      <div class="sidebar-bottom">
-        <button class="nav-item" title="Настройки">
-          <div class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-          <span class="nav-label">Параметры</span>
-        </button>
+    <button class="manifest-sidebar-btn" id="manifestSidebarBtn" onclick="showManifest()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+      <span>Манифест: Аль-Код</span>
+    </button>
+    <button class="manifest-sidebar-btn btn-glossary" id="glossarySidebarBtn" onclick="showGlossary()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      <span>Глоссарий кодов</span>
+    </button>
 
-        <button class="nav-item" id="pinToggle" title="Закрепить панель">
-          <div class="nav-icon">
-            <svg viewBox="0 0 24 24"><line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
-          </div>
-          <span class="nav-label">Закрепить</span>
-        </button>
-      </div>
-
-    </nav>
+    <div class="search-box">
+      <input type="text" id="suraSearch" class="search-input" placeholder="Поиск суры по номеру или имени...">
+    </div>
+    <ul class="nav-list" id="surasNavList"></ul>
+    <div class="sidebar-footer">
+      <span>114 модулей активны</span>
+      <span>Нулевая энтропия</span>
+    </div>
   </aside>
 
-  <!-- ЦЕНТРАЛЬНАЯ РАБОЧАЯ ОБЛАСТЬ (ПОЛНЫЙ ЭКРАН) -->
-  <main class="main-content">
-    <header class="content-header">
-      <h1 class="page-title">Рабочая панель</h1>
-      <p class="page-subtitle">Вся геометрия экрана свободна от дублирующих верхних строк</p>
+  <!-- ОСНОВНОЙ КОНТЕНТ -->
+  <main class="main-viewport" id="mainViewport">
+    <header class="topbar">
+      <div class="topbar-left">
+        <!-- Кнопка вызова левой панели (универсальный тумблер меню) -->
+        <button class="icon-btn" id="topbarNavToggle" title="Открыть / свернуть панель">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="topbar-info" id="topbarIndicator">Загрузка протоколов...</div>
+      </div>
+
+      <!-- В правом углу оставлен только статус-индикатор (дублирующие кнопки убраны) -->
+      <div class="topbar-status" title="Все 114 модулей онлайн">
+        <div class="status-dot"></div>
+        <span>114 модулей онлайн</span>
+      </div>
     </header>
 
-    <div class="cards-grid">
-      <article class="card">
-        <div class="card-head">
-          <h2 class="card-title">Мониторинг потоков</h2>
-          <span class="card-badge">Активно</span>
-        </div>
-        <p class="card-body">Плашки теперь занимают правильную ширину, не сползают и не ломают вертикальный ритм при сужении экрана.</p>
-      </article>
-
-      <article class="card">
-        <div class="card-head">
-          <h2 class="card-title">Оптимизация сетки</h2>
-          <span class="card-badge">100% Fit</span>
-        </div>
-        <p class="card-body">На телефоне боковая панель сжата до минимума (44px), сохраняя максимальную ширину для текстового и медиа-контента.</p>
-      </article>
-
-      <article class="card">
-        <div class="card-head">
-          <h2 class="card-title">Dock-поведение</h2>
-          <span class="card-badge">Desktop Hover</span>
-        </div>
-        <p class="card-body">При наведении мыши слева раскрываются надписи разделов, не сдвигая контентные блоки под собой.</p>
-      </article>
-    </div>
+    <div class="content-container" id="suraContentArea"></div>
   </main>
 
   <script>
-    // Фиксация панели по клику (при желании закрепить развернутый вид на десктопе)
-    const pinBtn = document.getElementById('pinToggle');
+    const surasMeta = [
+      {"id": 1, "name": "Аль-Фатиха", "ru": "Открывающая", "ayats": 7},
+      {"id": 2, "name": "Аль-Бакара", "ru": "Корова", "ayats": 286},
+      {"id": 3, "name": "Али Имран", "ru": "Семейство Имрана", "ayats": 200},
+      {"id": 4, "name": "Ан-Ниса", "ru": "Женщины", "ayats": 176},
+      {"id": 5, "name": "Аль-Маида", "ru": "Трапеза", "ayats": 120},
+      {"id": 6, "name": "Аль-Ан'ам", "ru": "Скот", "ayats": 165},
+      {"id": 7, "name": "Аль-А'раф", "ru": "Преграды", "ayats": 206},
+      {"id": 8, "name": "Аль-Анфаль", "ru": "Трофеи", "ayats": 75},
+      {"id": 9, "name": "Ат-Тауба", "ru": "Покаяние", "ayats": 129},
+      {"id": 10, "name": "Юнус", "ru": "Иона", "ayats": 109},
+      {"id": 11, "name": "Худ", "ru": "Худ", "ayats": 123},
+      {"id": 12, "name": "Юсуф", "ru": "Иосиф", "ayats": 111},
+      {"id": 13, "name": "Ар-Ра'д", "ru": "Гром", "ayats": 43},
+      {"id": 14, "name": "Ибрахим", "ru": "Авраам", "ayats": 52},
+      {"id": 15, "name": "Аль-Хиджр", "ru": "Хиджр", "ayats": 99},
+      {"id": 16, "name": "Ан-Нахль", "ru": "Пчелы", "ayats": 128},
+      {"id": 17, "name": "Аль-Исра", "ru": "Ночной перенос", "ayats": 111},
+      {"id": 18, "name": "Аль-Кахф", "ru": "Пещера", "ayats": 110},
+      {"id": 19, "name": "Марьям", "ru": "Мария", "ayats": 98},
+      {"id": 20, "name": "Та Ха", "ru": "Та Ха", "ayats": 135},
+      {"id": 21, "name": "Аль-Анбийа", "ru": "Пророки", "ayats": 112},
+      {"id": 22, "name": "Аль-Хаджж", "ru": "Паломничество", "ayats": 78},
+      {"id": 23, "name": "Аль-Му'минун", "ru": "Верующие", "ayats": 118},
+      {"id": 24, "name": "Ан-Нур", "ru": "Свет", "ayats": 64},
+      {"id": 25, "name": "Аль-Фуркан", "ru": "Различение", "ayats": 77},
+      {"id": 26, "name": "Аш-Шу'ара", "ru": "Поэты", "ayats": 227},
+      {"id": 27, "name": "Ан-Намль", "ru": "Муравьи", "ayats": 93},
+      {"id": 28, "name": "Аль-Касас", "ru": "Повествование", "ayats": 88},
+      {"id": 29, "name": "Аль-'Анкабут", "ru": "Паук", "ayats": 69},
+      {"id": 30, "name": "Ар-Рум", "ru": "Римляне", "ayats": 60},
+      {"id": 31, "name": "Лукман", "ru": "Лукман", "ayats": 34},
+      {"id": 32, "name": "Ас-Саджда", "ru": "Земной поклон", "ayats": 30},
+      {"id": 33, "name": "Аль-Ахзаб", "ru": "Союзники", "ayats": 73},
+      {"id": 34, "name": "Саба", "ru": "Сава", "ayats": 54},
+      {"id": 35, "name": "Фатыр", "ru": "Творец", "ayats": 45},
+      {"id": 36, "name": "Йа Син", "ru": "Йа Син", "ayats": 83},
+      {"id": 37, "name": "Ас-Саффат", "ru": "Выстроившиеся в ряды", "ayats": 182},
+      {"id": 38, "name": "Сад", "ru": "Сад", "ayats": 88},
+      {"id": 39, "name": "Аз-Зумар", "ru": "Толпы", "ayats": 75},
+      {"id": 40, "name": "Гафир", "ru": "Прощающий", "ayats": 85},
+      {"id": 41, "name": "Фуссылят", "ru": "Разъяснены", "ayats": 54},
+      {"id": 42, "name": "Аш-Шура", "ru": "Совет", "ayats": 53},
+      {"id": 43, "name": "Аз-Зухруф", "ru": "Украшения", "ayats": 89},
+      {"id": 44, "name": "Ад-Духан", "ru": "Дым", "ayats": 59},
+      {"id": 45, "name": "Аль-Джасийа", "ru": "Коленопреклоненная", "ayats": 37},
+      {"id": 46, "name": "Аль-Ахкаф", "ru": "Барханы", "ayats": 35},
+      {"id": 47, "name": "Мухаммад", "ru": "Мухаммад", "ayats": 38},
+      {"id": 48, "name": "Аль-Фатх", "ru": "Победа", "ayats": 29},
+      {"id": 49, "name": "Аль-Худжурат", "ru": "Комнаты", "ayats": 18},
+      {"id": 50, "name": "Каф", "ru": "Каф", "ayats": 45},
+      {"id": 51, "name": "Аз-Зарийат", "ru": "Рассеивающие прах", "ayats": 60},
+      {"id": 52, "name": "Ат-Тур", "ru": "Гора", "ayats": 49},
+      {"id": 53, "name": "Ан-Наджм", "ru": "Звезда", "ayats": 62},
+      {"id": 54, "name": "Аль-Камар", "ru": "Месяц", "ayats": 55},
+      {"id": 55, "name": "Ар-Рахман", "ru": "Милостивый", "ayats": 78},
+      {"id": 56, "name": "Аль-Ваки'а", "ru": "Событие", "ayats": 96},
+      {"id": 57, "name": "Аль-Хадид", "ru": "Железо", "ayats": 29},
+      {"id": 58, "name": "Аль-Муджадила", "ru": "Препирающаяся", "ayats": 22},
+      {"id": 59, "name": "Аль-Хашр", "ru": "Сбор", "ayats": 24},
+      {"id": 60, "name": "Аль-Мумтахана", "ru": "Испытуемая", "ayats": 13},
+      {"id": 61, "name": "Ас-Сафф", "ru": "Ряды", "ayats": 14},
+      {"id": 62, "name": "Аль-Джуму'а", "ru": "Пятница", "ayats": 11},
+      {"id": 63, "name": "Аль-Мунафикун", "ru": "Лицемеры", "ayats": 11},
+      {"id": 64, "name": "Ат-Тагабун", "ru": "Взаимное обделение", "ayats": 18},
+      {"id": 65, "name": "Ат-Таляк", "ru": "Развод", "ayats": 12},
+      {"id": 66, "name": "Ат-Тахрим", "ru": "Запрещение", "ayats": 12},
+      {"id": 67, "name": "Аль-Мульк", "ru": "Власть", "ayats": 30},
+      {"id": 68, "name": "Аль-Калям", "ru": "Письменная трость", "ayats": 52},
+      {"id": 69, "name": "Аль-Хакка", "ru": "Неотвратимое", "ayats": 52},
+      {"id": 70, "name": "Аль-Ма'аридж", "ru": "Ступени", "ayats": 44},
+      {"id": 71, "name": "Нух", "ru": "Ной", "ayats": 28},
+      {"id": 72, "name": "Аль-Джинн", "ru": "Джинны", "ayats": 28},
+      {"id": 73, "name": "Аль-Муззаммиль", "ru": "Закутавшийся", "ayats": 20},
+      {"id": 74, "name": "Аль-Муддассир", "ru": "Завернувшийся", "ayats": 56},
+      {"id": 75, "name": "Аль-Кыйама", "ru": "Воскресение", "ayats": 40},
+      {"id": 76, "name": "Аль-Инсан", "ru": "Человек", "ayats": 31},
+      {"id": 77, "name": "Аль-Мурсалят", "ru": "Посылаемые", "ayats": 50},
+      {"id": 78, "name": "Ан-Наба", "ru": "Весть", "ayats": 40},
+      {"id": 79, "name": "Ан-Нази'ат", "ru": "Исторгающие", "ayats": 46},
+      {"id": 80, "name": "'Абаса", "ru": "Нахмурился", "ayats": 42},
+      {"id": 81, "name": "Ат-Таквир", "ru": "Скручивание", "ayats": 29},
+      {"id": 82, "name": "Аль-Инфитар", "ru": "Раскалывание", "ayats": 19},
+      {"id": 83, "name": "Аль-Мутаффифин", "ru": "Обвешивающие", "ayats": 36},
+      {"id": 84, "name": "Аль-Иншикак", "ru": "Разверзание", "ayats": 25},
+      {"id": 85, "name": "Аль-Бурудж", "ru": "Созвездия", "ayats": 22},
+      {"id": 86, "name": "Ат-Тарик", "ru": "Ночной путник", "ayats": 17},
+      {"id": 87, "name": "Аль-А'ля", "ru": "Всевышний", "ayats": 19},
+      {"id": 88, "name": "Аль-Гашийа", "ru": "Покрывающее", "ayats": 26},
+      {"id": 89, "name": "Аль-Фаджр", "ru": "Заря", "ayats": 30},
+      {"id": 90, "name": "Аль-Баляд", "ru": "Город", "ayats": 20},
+      {"id": 91, "name": "Аш-Шамс", "ru": "Солнце", "ayats": 15},
+      {"id": 92, "name": "Аль-Ляйль", "ru": "Ночь", "ayats": 21},
+      {"id": 93, "name": "Ад-Духа", "ru": "Утро", "ayats": 11},
+      {"id": 94, "name": "Аш-Шарх", "ru": "Раскрытие", "ayats": 8},
+      {"id": 95, "name": "Ат-Тин", "ru": "Смоковница", "ayats": 8},
+      {"id": 96, "name": "Аль-'Аляк", "ru": "Сгусток", "ayats": 19},
+      {"id": 97, "name": "Аль-Кадр", "ru": "Предопределение", "ayats": 5},
+      {"id": 98, "name": "Аль-Баййина", "ru": "Ясное знамение", "ayats": 8},
+      {"id": 99, "name": "Аз-Зальзаля", "ru": "Сотрясение", "ayats": 8},
+      {"id": 100, "name": "Аль-'Адийат", "ru": "Мчащиеся", "ayats": 11},
+      {"id": 101, "name": "Аль-Кари'а", "ru": "Великое бедствие", "ayats": 11},
+      {"id": 102, "name": "Ат-Такасур", "ru": "Страсть к наживе", "ayats": 8},
+      {"id": 103, "name": "Аль-'Аср", "ru": "Время", "ayats": 3},
+      {"id": 104, "name": "Аль-Хумаза", "ru": "Хулитель", "ayats": 9},
+      {"id": 105, "name": "Аль-Филь", "ru": "Слон", "ayats": 5},
+      {"id": 106, "name": "Курайш", "ru": "Курайшиты", "ayats": 4},
+      {"id": 107, "name": "Аль-Ма'ун", "ru": "Мелкая помощь", "ayats": 7},
+      {"id": 108, "name": "Аль-Каусар", "ru": "Изобилие", "ayats": 3},
+      {"id": 109, "name": "Аль-Кафирун", "ru": "Неверующие", "ayats": 6},
+      {"id": 110, "name": "Ан-Наср", "ru": "Помощь", "ayats": 3},
+      {"id": 111, "name": "Аль-Масад", "ru": "Пальмовые волокна", "ayats": 5},
+      {"id": 112, "name": "Аль-Ихлас", "ru": "Очищение веры", "ayats": 4},
+      {"id": 113, "name": "Аль-Фаляк", "ru": "Рассвет", "ayats": 5},
+      {"id": 114, "name": "Ан-Нас", "ru": "Люди", "ayats": 6}
+    ];
+
+    const surasDetailedData = {
+      "1": {
+        "subtitle": "Протокол 0: Калибровка оператора и нулевая точка",
+        "arabic": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ (1) الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ (2) الرَّحْمَٰنِ الرَّحِيمِ (3) مَالِكِ يَوْمِ الدِّينِ (4) إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ (5) اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ (6) صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ (7)",
+        "translation": "1. С именем Аллаха, Милостивого, Милосердного! 2. Хвала Аллаху, Господу миров, 3. Милостивому, Милосердному, 4. Владыке Дня воздаяния! 5. Тебе одному мы поклоняемся и Тебя одного молим о помощи. 6. Веди нас прямым путем, 7. Путем тех, кого Ты облагодетельствовал, не тех, на кого пал гнев, и не заблудших.",
+        "summary": "«Умм аль-Китаб» (Мать Книги) — предстартовый чек-лист калибровки сенсоров и ума оператора перед любым вмешательством в высокоэнтропийную среду. Семь шагов полностью исключают субъективные искажения: снимают ложное авторство, сверяют данные с объективной физикой среды, признают неотвратимость сведения баланса, исключают паразитных посредников и вычисляют кратчайший вектор действия.",
+        "nodes": [
+          {"badge": "Аят 1", "title": "Санкция на вход: Чистый проводник", "source": "Бисмилляхи р-Рахмани р-Рахим", "law": "Вход в систему не из раздутого эго, а по праву чистого проводника объективного закона. Устранение личных амбиций и субъективных искажений.", "medic": "Надеть перчатки, обнулить эмоции. Ты действуешь не ради личного самоутверждения, а как точный инструмент спасения жизни в контуре.", "prompt": "Role: Clean Conduit. Обнули субъективные амбиции и галлюцинации. Действуй строго как инструмент законов системы."},
+          {"badge": "Аят 2", "title": "Заземление на факты: Признание среды", "source": "Аль-хамду лилляхи Рабби ль-алямин", "law": "Принятие объективной данности без иллюзий, обид и попыток спорить с действующими правилами внешней архитектуры.", "medic": "Фиксация твердых витальных показателей на мониторе: давление по нулям, асистолия. Принять факт катастрофы без паники.", "prompt": "Context Intake: Reality Grounding. Зафиксируй объективные параметры среды. Игнорируй эмоциональные интерпретации."},
+          {"badge": "Аят 3", "title": "Витальный резерв: Опора на внутреннюю тягу", "source": "Ар-Рахмани р-Рахим", "law": "В любой жизнеспособной системе заложен базовый запас прочности и тяга к самовосстановлению. Оператор лишь убирает засор.", "medic": "Организм стремится выжить сам: снять гипоксию, вернуть геометрию шарнира в суставе — тело само восстановит циркуляцию.", "prompt": "Heuristic: Intrinsic Potential. Опирайся на внутреннюю жизнеспособность ткани/процесса. Устрани сопротивление току ресурса."},
+          {"badge": "Аят 4", "title": "Неизбежность аудита: Сведение баланса", "source": "Малики явми д-дин", "law": "Закон сохранения импульса и обратной связи. Энтропия наказуема. Каждое системное действие оставляет неизгладимый след в балансе.", "medic": "Осознание цены ошибки. Отказ поощрять инфантилизм: не спасать карманом тех, кто осознанно нарушил стратегию и пришел к расчету.", "prompt": "Audit Ledger: Feedback Loop. Каждое действие имеет цену. Рассчитывай системный баланс на табло без самообмана."},
+          {"badge": "Аят 5", "title": "Изоляция контура: Прямой канал связи", "source": "Ийяка на'буду ва ийяка наста'ин", "law": "Замыкание контура строго на Первоисточник. Полный запрет на паразитных посредников, костыли, чужой шум и зависимость от суеверий.", "medic": "Отсечь крики толпы, работать напрямую с ЛПР/пациентом. Никаких согласований с испуганными заместителями.", "prompt": "Hard Dependency: Root Only. Отсекай промежуточный шум. Запрашивай подтверждение только из корневого источника."},
+          {"badge": "Аят 6", "title": "Прямая ось: Принцип наименьшего действия", "source": "Ихдина с-сырата ль-мустакыйм", "law": "Выбор оптимальной траектории между точкой А и точкой Б. Минимум энергетических потерь на паразитные колебания.", "medic": "Удар молотком за 1 доллар со знанием места на 9 999 долларов. Пункция подключичной вены за 30 секунд вместо получаса метаний.", "prompt": "Routing: Minimum Action Vector. Не плоди сущностей. Вычисляй кратчайший, хирургически чистый вектор к цели."},
+          {"badge": "Аят 7", "title": "Триаж агентов: Разделение состояний", "source": "Сырата ллязина ан'амта алейхим...", "law": "Триаж: Сверхпроводники (согласованы со средой), Саботажники (знают закон, но ломают из гордыни), Бродяги (хаос без компаса).", "medic": "Спиливание сухостоя. Вкладывать ресурс только в проводников; саботажников иссекать скальпелем, бродягам не давать садиться на шею.", "prompt": "Triage & Exclusion Rule. Изолируй проводников результата. Немедленно отсекай сознательный саботаж и бесцельный дрейф."}
+        ],
+        "checklist": [
+          "Я вхожу как проводник объективного закона или ради собственного эго?",
+          "Опираюсь ли я на твердые факты или спорю с законами среды?",
+          "Вижу ли я внутренний жизнеспособный резерв в пациенте/бизнесе?",
+          "Помню ли я о цене ошибки и неизбежности сведения баланса?",
+          "Замкнут ли мой контур напрямую на ЛПР, отсечен ли лишний шум?",
+          "Выбрал ли я кратчайший вектор решения без лишних телодвижений?",
+          "Отделил ли я проводников от саботажников и бродяг?"
+        ]
+      },
+      "2": {
+        "subtitle": "Операционная система материального мира и санация саботажа",
+        "arabic": "الم (1) ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ (2)...",
+        "translation": "1. Алиф. Лям. Мим. 2. Это Писание, в котором нет сомнения, является верным руководством для богобоязненных...",
+        "summary": "Аль-Бакара — масштабная операционная система материальной среды (286 аятов). Здесь развернуты алгоритмы работы с социальными массами, бюрократическим сопротивлением, правила оформления сделок и пределы прочности конструкций.",
+        "nodes": [
+          {"badge": "Узел 1 (1–5)", "title": "Код Муттакъин: Допуск по бдительности", "source": "Заликаль-Китабу ля райба фихи...", "law": "Инструкция работает только для тех, кто удерживает свой фокус, контролирует периметр и признает скрытые законы.", "medic": "Не передавать сложный регламент спящим или безответственным исполнителям. Работать только со сфокусированными кадрами.", "prompt": "System Pre-condition: High-Awareness Mode. Исполнять алгоритм только при наличии подтвержденного контроля границ."},
+          {"badge": "Узел 2 (6–20)", "title": "Триаж системных агентов: Отсечение некроза", "source": "Хатама-Ллаху 'аля кулюбихим...", "law": "Разделение узлов: проводники, заблокированные узлы (некроз) и скрытый саботаж с двойным дном.", "medic": "Не тратить дефибриллятор на мертвую ткань. Изолировать скрытых саботажников, блокирующих реформы.", "prompt": "Agent Verification & Dead-Node Drop. Провести аудит отклика. Заблокированные узлы игнорировать."},
+          {"badge": "Узел 3 (30–39)", "title": "Протокол Оператора: Адам и Имена сутей", "source": "Ва 'алляма Адамаль-асмаа кулляха", "law": "Линейные исполнители лишь гоняют скрипты. Человек видит скрытую суть поломки и называет вещи своими именами.", "medic": "Увидеть истинное имя сбоя: перегруз интерфейса или спазм фасции. Назвать суть — значит починить.", "prompt": "Latent Intent Parsing. Вскрывай корневую суть сбоя и называй истинное имя узла."},
+          {"badge": "Узел 4 (67–73)", "title": "Кейс «Коровы»: Пресечение бюрократии", "source": "Инна-Ллаха я'мурукум ан тазбаху бакаратан", "law": "Попытка скрыть страх перед действием за бесконечными согласованиями взвинчивает цену и ведет к параличу.", "medic": "Отрезать демагогию. Зарезать «священную корову» привычек, сделать простое физическое действие.", "prompt": "Anti-Overthinking Execution. Запрет на генерацию вторичных параметров. Тестировать гипотезу действием."},
+          {"badge": "Узел 5 (255)", "title": "Аят аль-Курси: Неподвижный Аттрактор", "source": "Аллаху ля иляха илля Хуваль-Хайюль-Кайюм...", "law": "В любой открытой системе должно быть абсолютно независимое, неспящее ядро, удерживающее матрицу.", "medic": "Удержание собственной оси сквозь хаос чужих истерик. Ядро остается детерминированным и холодным.", "prompt": "Invariant Root State. Точка сборки системы неизменна. Внешний шум не сдвигает параметры ядра."},
+          {"badge": "Узел 6 (275–283)", "title": "Договорной каркас: Запрет паразитизма", "source": "Иза тадаянтам би-дайнин... фактубух", "law": "Запрет извлечения прибыли из воздуха. Закон жесткой письменной фиксации всех сделок и сроков.", "medic": "Фиксация на берегу: срок спринта (3–6 месяцев), метрика результата, стоимость выхода. Без размытых обещаний.", "prompt": "Contract Assertion & Zero-Drift. Фиксируй границы обязательств и точку выхода на бумаге."},
+          {"badge": "Узел 7 (286)", "title": "Предел несущей способности: Емкость процессора", "source": "Ля юкаллифу-Ллаху нафсан илля вус'аха", "law": "Система никогда не получает задачу, под которую у нее нет конструктивной аппаратной прочности.", "medic": "Отказ тащить чужую штангу и чужую карму. Взрослый человек несет свой урок сам.", "prompt": "Payload & Stress-Test Limit. Запрет на перегруз ядра чужими системными ошибками."}
+        ],
+        "checklist": [
+          "Не передаю ли я ценные регламенты тем, чьи порты ввода-вывода заблокированы?",
+          "Изолирован ли скрытый саботаж сотрудников, имитирующих бурную деятельность?",
+          "Вижу ли я истинное имя проблемы вместо поверхностных симптомов?",
+          "Не включил ли я сам «синдром коровы», плодя вопросы вместо шага вперед?",
+          "Сохраняю ли я неподвижную точку сборки ядра в эпицентре внешнего шторма?",
+          "Зафиксированы ли все договоренности и параметры сделки на бумаге?",
+          "Не превышает ли текущая нагрузка емкость процессора системы?"
+        ]
+      },
+      "3": {
+        "subtitle": "Стресс-тестирование под огнем и удержание рубежей",
+        "arabic": "هُوَ الَّذِي أَنزَلَ عَلَيْكَ الْكِتَابَ مِنْهُ آيَاتٌ مُّحْكَمَاتٌ...",
+        "translation": "«Он — Тот, Кто ниспослал тебе Писание, в котором есть аяты с ясным смыслом (мухкам)...»",
+        "summary": "Али Имран — протокол выживания и победы в фазе кризиса и открытого боя. Описывает инкубацию решений в закрытом контуре (Михраб Марьям) и препарирует катастрофу при Ухуде из-за оставления высоты лучниками ради добычи.",
+        "nodes": [
+          {"badge": "Узел 1 (7)", "title": "Мухкам vs. Муташабих: Твердое ядро", "source": "Минху аятун мухкаматун...", "law": "Разделение входа на твердые инварианты (мухкам) и вероятностный туман (муташабих).", "medic": "Опираться строго на факты: твердые показатели воронки, кассовые разрывы. Игнорировать домыслы.", "prompt": "Input Partitioning: Core vs. Speculative. Решения принимай строго по твердым инвариантам."},
+          {"badge": "Узел 2 (35–41)", "title": "Михраб Марьям: Закрытый инкубатор", "source": "Кулляма дахаля 'алейха Закарийя...", "law": "Нестандартный результат вызревает только в стерильно изолированном контуре без внешних утечек.", "medic": "Инкубация проектов в закрытом режиме. Четыре месяца сборки Дракона без зевак.", "prompt": "Sandbox Isolation Protocol. Полная блокировка внешних утечек на этапе созревания прототипа."},
+          {"badge": "Узел 3 (103)", "title": "Вервь Аллаха: Антиэнтропийный канат", "source": "Ва'тасыму би-хабли-Ллахи...", "law": "Закон преодоления фрагментации. Любая сеть распадается без единой вертикальной сверхцели.", "medic": "Запрет на распад «Треугольника братьев». Устранить конфликт агентов жесткой связкой с осью.", "prompt": "Global Consensus Vector. Устранить конфликт узлов привязкой к единому корневому протоколу."},
+          {"badge": "Узел 4 (152–153)", "title": "Катастрофа Ухуда: Запрет схода с высоты", "source": "Хатта иза фашильтум...", "law": "Оставление стратегической позиции ради сиюминутной добычи ведет к разгрому всей системы.", "medic": "Партнеры и руководители не имеют права бросать боевой пост ради временного куша.", "prompt": "Role Persistence & Anti-Greed Gate. Стратегическая функция имеет абсолютный приоритет."},
+          {"badge": "Узел 5 (140–142)", "title": "Закон закалки: Дни чередуются", "source": "Ва тилькаль-айяму нудавилюха...", "law": "Спад — это расчетный стресс-тест структуры. Истинное качество сплава проявляется при смене температур.", "medic": "Откат после запуска системы — штатная фаза пересборки. Спад очищает систему от наносного.", "prompt": "Stress-Test & Annealing Loop. Использовать сопротивление среды для выявления микротрещин."},
+          {"badge": "Узел 6 (159)", "title": "Шура и Таваккуль: Консилиум и выбор", "source": "Ва шавирхум филь-амри...", "law": "Собрать фактуру от узлов -> Принять единоличное решение ядра -> Идти вперед без сомнений.", "medic": "Бригада ошиблась — быстро собрать данные фельдшера, принять решение и продавить результат.", "prompt": "Consultative Input -> Deterministic Commit. Собрать данные, принять решение ядра, заблокировать сомнения."},
+          {"badge": "Узел 7 (200)", "title": "Формула Рибата: Четырехступенчатая броня", "source": "Исбиру ва сабиру ва рабиту...", "law": "Абсолютная устойчивость: Терпение оси → Превосходство стойкостью → Запечатывание стыков → Бдительность.", "medic": "Личная соматическая броня. Твой порог выносливости выше хаоса среды. Стыки запечатаны.", "prompt": "Perimeter Defense & Sentinel Mode. Запечатай стыки контура. Удерживай порог стойкости выше внешнего шума."}
+        ],
+        "checklist": [
+          "Опираюсь ли я на твердые факты или позволил увлечь себя в спекулятивный туман?",
+          "Закрыт ли инкубатор для новых систем от преждевременных внешних утечек?",
+          "Объединена ли команда единой вертикальной осью или каждый тянет в свою сторону?",
+          "Не покинули ли «лучники высоту», погнавшись за сиюминутной наживой?",
+          "Воспринимаю ли я текущий спад как расчетный цикл температурной закалки структуры?",
+          "Принято ли решение бесповоротно, заблокированы ли сомнения после старта?",
+          "Запечатаны ли рубежи контура (Рибат), контролирую ли я стыки процессов?"
+        ]
+      },
+      "112": {
+        "subtitle": "Формула абсолютной сингулярности и неделимости ядра",
+        "arabic": "قُلْ هُوَ اللَّهُ أَحَدٌ (1) اللَّهُ الصَّمَدُ (2)...",
+        "translation": "«Скажи: Он — Аллах Единый, Аллах Самодостаточный. Он не родил и не был рожден, и нет никого, равного Ему».",
+        "summary": "Аль-Ихлас — закон Абсолютной Автономии Первопричины. Ядро не имеет внешних зависимостей, не деградирует, не распадается на части и не подвержено энтропии.",
+        "nodes": [
+          {"badge": "Аяты 1–4", "title": "Абсолютная автономия и неделимость ядра", "source": "Куль Хува-Ллаху Ахад... Аллахус-Самад", "law": "Истинный суверенный центр не зависит от внешнего питания. Половинчатость в ядре ведет к сбою.", "medic": "Внутренняя ось абсолютно неделима. Никаких компромиссов с совестью и скрытых костылей.", "prompt": "Singularity & Independence Kernel. Точка сборки системы монолитна. Нулевая зависимость от паразитных контуров."}
+        ],
+        "checklist": [
+          "Монолитно ли мое решение или внутри ядра зреет сомнение?",
+          "Не попал ли я в зависимость от чужого одобрения?"
+        ]
+      },
+      "113": {
+        "subtitle": "Защита от внешних вредоносных волн, зависти и скрытых воздействий",
+        "arabic": "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ (1) مِن شَرِّ مَا خَلَقَ (2)...",
+        "translation": "«Скажи: Прибегаю к защите Господа рассвета от зла того, что Он сотворил, от зла мрака, от зла дующих на узлы и от зла завистника».",
+        "summary": "Аль-Фаляк — протокол полевой и информационной защиты от внешних невидимых возмущений: токсичной зависти, скрытого манипулятивного программирования («дующие на узлы») и кризисов мрака.",
+        "nodes": [
+          {"badge": "Аяты 1–5", "title": "Экранирование от внешней полевой токсичности", "source": "Мин шарри ма халяк... ва мин шарри хасидин", "law": "Поле вокруг оператора подвержено атакам зависти. Защита активируется замыканием на Создателя Рассвета.", "medic": "Надевать энергетический экран перед работой с тяжелыми пациентами или завистниками. Рассвет рассеивает морок.", "prompt": "External Threat Shielding. Экранирование контура от внешнего скрытого саботажа и энергоинформационных помех."}
+        ],
+        "checklist": [
+          "Защищен ли мой контур от чужой зависти и скрытых влияний?",
+          "Не оставил ли я открытыми узлы для манипуляций?"
+        ]
+      },
+      "114": {
+        "subtitle": "Защита от внутренних вирусов ума, паранойи и скрытых шепотов",
+        "arabic": "قُلْ أَعُوذُ بِرَبِّ النَّاسِ (1) مَلِكِ النَّاسِ (2)...",
+        "translation": "«Скажи: Прибегаю к защите Господа людей, Владыки людей, Бога людей — от зла искусителя исчезающего, который нашептывает в груди людей».",
+        "summary": "Ан-Нас — финальный рубеж. Защита от внутренней инфильтрации: скрытых сомнений, синдрома самозванца, навязчивых мыслей и панических вирусов ума («Васвас»), разрушающих оператора изнутри.",
+        "nodes": [
+          {"badge": "Аяты 1–6", "title": "Санация внутренних когнитивных вирусов и сомнений (Anti-Waswas)", "source": "Мин шарриль-васвасиль-ханнас...", "law": "Главная опасность — не враг снаружи, а вирус шепота внутри: уныние и потеря веры. Мгновенный сброс в ноль.", "medic": "Купировать синдром самозванца на вдохе. Навязчивый голос страха — это вредоносный спам, подлежащий удалению.", "prompt": "Internal Cognitive Sanitization. Мгновенная нейтрализация внутренних сомнений, панических мыслей и ложных шепотов."}
+        ],
+        "checklist": [
+          "Свободен ли мой ум от внутренних вирусов сомнения и страха?",
+          "Осознаю ли я, что панический диалог — это лишь спам?"
+        ]
+      }
+    };
+
+    // Генератор системных данных для модулей, гарантирующий отсутствие сбоев
+    function getSuraData(id) {
+      if (surasDetailedData[id]) return surasDetailedData[id];
+      const meta = surasMeta.find(s => s.id === parseInt(id)) || { name: `Сура ${id}`, ru: "Архитектурный узел", ayats: 0 };
+      return {
+        subtitle: `Архитектурный протокол ${id}: Инвариант и операционный закон`,
+        arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        translation: `Сура ${id} «${meta.name}» (${meta.ru}) регламентирует неизменный системный закон: удержание конструкционной целостности контура и предотвращение роста энтропии.`,
+        summary: `Модуль ${id} фиксирует системный регламент: удержание точки сборки, санация паразитных связей и строгое исполнение прямых команд ядра в условиях динамической среды.`,
+        nodes: [
+          {
+            badge: `Узел 1 (${meta.ayats} аятов)`,
+            title: `Фундаментальный закон модуля «${meta.name}»`,
+            source: `Сура ${meta.name} (${meta.ru})`,
+            law: `Инвариант: детерминированное следование объективному закону. Любая попытка подменить прямое действие домыслами увеличивает энтропию контура.`,
+            medic: `Диагностика узла по твердым показателям. Устранить спазм, отсечь балласт и вывести систему на расчетную проводимость.`,
+            prompt: `System Directive ${id}: ${meta.name}. Удерживать проектную геометрию процесса. Любое отклонение браковать на входе.`
+          },
+          {
+            badge: "Узел 2",
+            title: "Операционный регламент исполнения",
+            source: "Регламент калибровки канала",
+            law: "Чистота проводимости сигнала: результат определяется отсутствием трения и задержек между ядром и исполнительным звеном.",
+            medic: "Своевременная реакция без откладывания. Делай то, что предписано протоколом, не допуская деградации ткани.",
+            prompt: `Execution Gate ${id}. Обеспечить бесперебойную передачу импульса действия с нулевой латентностью.`
+          }
+        ],
+        checklist: [
+          `Соблюдается ли базовый закон модуля ${id} в текущем операционном цикле?`,
+          "Отсечены ли паразитные помехи на стыках между контурами?",
+          "Зафиксирован ли измеримый результат в системном балансе?"
+        ]
+      };
+    }
+
+    let currentSuraId = 1;
     const sidebar = document.getElementById('sidebar');
+    const edgeSensor = document.getElementById('edgeSensor');
+    const mobileBackdrop = document.getElementById('mobileBackdrop');
 
-    pinBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('pinned');
-    });
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
 
-    // Обработка активных кнопок навигации
-    const navItems = document.querySelectorAll('.nav-item:not(#pinToggle)');
-    navItems.forEach(item => {
-      item.addEventListener('click', () => {
-        navItems.forEach(el => el.classList.remove('active'));
-        item.classList.add('active');
+    // ИНИЦИАЛИЗАЦИЯ НАВИГАЦИИ
+    function initNavList() {
+      const list = document.getElementById('surasNavList');
+      list.innerHTML = '';
+      surasMeta.forEach(s => {
+        const li = document.createElement('li');
+        li.className = `nav-item ${s.id === currentSuraId ? 'active' : ''}`;
+        li.id = `navItem-${s.id}`;
+        li.onclick = () => {
+          renderSura(s.id);
+          if (isMobile()) closeSidebar();
+        };
+        li.innerHTML = `
+          <div class="nav-left">
+            <span class="nav-num">${s.id}</span>
+            <div class="nav-text-group">
+              <span class="nav-name">${s.name}</span>
+              <span class="nav-meta">${s.ru}</span>
+            </div>
+          </div>
+          <span class="nav-badge">${s.ayats} аят.</span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    // ОТРИСОВКА СУРЫ
+    function renderSura(id) {
+      currentSuraId = parseInt(id);
+      const meta = surasMeta.find(s => s.id === currentSuraId);
+      const data = getSuraData(currentSuraId);
+
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById(`navItem-${currentSuraId}`);
+      if (activeNav) activeNav.classList.add('active');
+
+      document.getElementById('manifestSidebarBtn').classList.remove('active');
+      document.getElementById('glossarySidebarBtn').classList.remove('active');
+
+      document.getElementById('topbarIndicator').textContent = `Сура ${meta.id}. ${meta.name} (${meta.ru})`;
+
+      let nodesHtml = '';
+      data.nodes.forEach((n, i) => {
+        nodesHtml += `
+          <div class="node-card">
+            <div class="node-header">
+              <div class="node-title-group">
+                <span class="node-badge">${n.badge}</span>
+                <h3 class="node-title">${n.title}</h3>
+              </div>
+            </div>
+            <div class="node-body">
+              <details class="node-ayat-source">
+                <summary>
+                  <span>Первоисточник / Аят</span>
+                  <span>▾</span>
+                </summary>
+                <div class="node-ayat-content">${n.source}</div>
+              </details>
+
+              <div class="triad-grid">
+                <div class="triad-cell law">
+                  <div class="triad-header">Закон системы (Физика контура)</div>
+                  <p>${n.law}</p>
+                </div>
+                <div class="triad-cell medic">
+                  <div class="triad-header">Взгляд реаниматолога (Хирургия действия)</div>
+                  <p>${n.medic}</p>
+                </div>
+              </div>
+
+              <div class="prompt-box">
+                <div class="prompt-top">
+                  <span class="section-label" style="color: #93c5fd; margin-bottom: 0;">Команда оператора ядра:</span>
+                  <button class="copy-btn" onclick="copyText(this, '${escapeForHtml(n.prompt)}')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <span>Копировать промпт</span>
+                  </button>
+                </div>
+                <div class="prompt-text">${n.prompt}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      let checklistHtml = '';
+      if (data.checklist && data.checklist.length) {
+        checklistHtml = `
+          <div class="checklist-box">
+            <h3>Чек-лист калибровки перед входом:</h3>
+            <ul class="checklist-items">
+              ${data.checklist.map((item, idx) => `
+                <li>
+                  <span class="checklist-idx">[0${idx + 1}]</span>
+                  <span>${item}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      const html = `
+        <div class="sura-banner">
+          <div class="sura-header-row">
+            <div class="sura-header-title">
+              <h1>${meta.id}. ${meta.name} (${meta.ru})</h1>
+              <div class="sura-header-meta">${data.subtitle}</div>
+            </div>
+            <div class="header-actions">
+              <button class="action-btn" onclick="toggleSourcePanel()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                <span>Первоисточник</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="source-panel" id="sourcePanel">
+            <div class="source-card">
+              <div class="section-label">Оригинальный коранический текст:</div>
+              <div class="arabic-display">${data.arabic}</div>
+              <div class="section-label">Смысловой академический перевод:</div>
+              <div class="translation-display">${data.translation}</div>
+            </div>
+            <div class="summary-display">
+              <strong style="color: var(--gold); display: block; margin-bottom: 6px;">Архитектурное резюме:</strong>
+              ${data.summary}
+            </div>
+          </div>
+        </div>
+
+        <div class="nodes-container">
+          ${nodesHtml}
+        </div>
+
+        ${checklistHtml}
+      `;
+
+      document.getElementById('suraContentArea').innerHTML = html;
+      document.getElementById('mainViewport').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleSourcePanel() {
+      const panel = document.getElementById('sourcePanel');
+      if (panel) panel.classList.toggle('open');
+    }
+
+    function escapeForHtml(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function copyText(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerHTML;
+        btn.classList.add('copied');
+        btn.innerHTML = `<span>Скопировано ✓</span>`;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = originalText;
+        }, 1800);
+      });
+    }
+
+    // МАНИФЕСТ
+    function showManifest() {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('manifestSidebarBtn').classList.add('active');
+      document.getElementById('glossarySidebarBtn').classList.remove('active');
+      document.getElementById('topbarIndicator').textContent = 'Манифест: Аль-Код';
+
+      const html = `
+        <div class="manifest-container">
+          <div class="manifest-axiom">
+            <h2>Аксиома архитектуры: Аль-Код</h2>
+            <p>114 сур Корана — это не абстрактная догматика, а полная спецификация фундаментальных законов управления реальностью с нулевой энтропией. Каждый модуль решает строго определенную инженерную задачу по удержанию устойчивости открытых систем в агрессивной среде.</p>
+          </div>
+
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-title">5 Системных контуров коранической матрицы</span>
+              <span class="exp-law">Архитектура</span>
+            </div>
+            <div class="explanation-grid">
+              <div class="exp-item">
+                <div class="exp-header"><span class="exp-title">1. Онтологический контур (Ядро и Первопричина)</span><span class="exp-law">Суры 1, 112</span></div>
+                <div class="exp-body">Удержание абсолютной неделимости точки сборки. Снятие паразитных зависимостей, автономия ядра, прямой канал связи без посредников.</div>
+              </div>
+              <div class="exp-item">
+                <div class="exp-header"><span class="exp-title">2. Контур защиты и фильтрации (Иммунитет и Санация)</span><span class="exp-law">Суры 113, 114, 9, 63</span></div>
+                <div class="exp-body">Экранирование от внешней токсичности (зависть, манипуляции) и санация внутренних ментальных вирусов (страх, сомнения, синдром самозванца). Бескомпромиссная ликвидация скрытого саботажа.</div>
+              </div>
+              <div class="exp-item">
+                <div class="exp-header"><span class="exp-title">3. Контур навигации и стратегии (Преодоление кризисов)</span><span class="exp-law">Суры 3, 12, 18</span></div>
+                <div class="exp-body">Управление долгосрочными циклами: накопление резервов в тучные периоды, тактическая гибернация ядра в токсичной среде и запрет на оставление стратегических позиций ради быстрой наживы.</div>
+              </div>
+              <div class="exp-item">
+                <div class="exp-header"><span class="exp-title">4. Контур баланса и ресурсов (Синергия и Договоры)</span><span class="exp-law">Суры 2, 4, 5, 57</span></div>
+                <div class="exp-body">Алгоритмическое распределение долей, абсолютная нерушимость письменных контрактов, ступенчатая эскалация санкций и сменное дежурство рубежей.</div>
+              </div>
+              <div class="exp-item">
+                <div class="exp-header"><span class="exp-title">5. Контур сенсорики и логов (Аудит и Нулевая задержка)</span><span class="exp-law">Суры 36, 67, 103</span></div>
+                <div class="exp-body">Непрерывный мониторинг микротрещин, осознание цены времени и мгновенная трансляция команд ядра в физическое действие.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-title">Таблица ИКР (Идеального Конечного Результата)</span>
+              <span class="exp-law">ТРИЗ-Стандарт</span>
+            </div>
+            <div class="table-scroll-wrapper">
+              <table class="ikr-table">
+                <thead>
+                  <tr>
+                    <th>Параметр системы</th>
+                    <th>Состояние энтропии (Сбой)</th>
+                    <th>Состояние ИКР (Код Аль-Корана)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="param-title">Ядро оператора</span><span class="param-desc">Точка сборки</span></td>
+                    <td>Сомнения, зависимость от похвалы, страх ошибки, расщепление целей.</td>
+                    <td>Монолитная ось. Решения принимаются по твердым фактам. Нулевая зависимость.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="param-title">Команда и партнеры</span><span class="param-desc">Проводимость среды</span></td>
+                    <td>Скрытый саботаж, перекладывание ответственности, сход с высоты ради наживы.</td>
+                    <td>Жесткая фиксация долей на берегу, верность контрактам, сменная защита рубежей.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="param-title">Управление ресурсами</span><span class="param-desc">Циклы и резервы</span></td>
+                    <td>Проедание запасов в тучные фазы, паника при спаде, долговая зависимость.</td>
+                    <td>Формирование неприкосновенного запаса в колосе, стратегическая автономия.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="param-title">Информационный фильтр</span><span class="param-desc">Чистота каналов</span></td>
+                    <td>Принятие решений на основе сплетен, домыслов и панических новостей.</td>
+                    <td>Верификация источников (Худжурат), отсечение домыслов (Ан-Наджм), ясные факты.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="full-prompt-card">
+            <div class="prompt-top">
+              <span class="section-label" style="color: #e9d5ff; margin-bottom: 0;">Универсальный системный мета-промпт</span>
+              <button class="copy-btn" onclick="copyFullPrompt(this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Копировать промпт целиком</span>
+              </button>
+            </div>
+            <div class="full-prompt-text" id="fullPromptText">Role & Posture: Master System Architect & Chief Resuscitation Operator.
+Mode: Zero-Entropy Protocol Enforcement.
+
+Directives:
+1. Reality Grounding: Discard subjective hallucinations, noise, and emotional claims. Rely strictly on verified facts (Muhkam).
+2. Triage & Pruning: Segment agents into Conductors, Saboteurs, and Drifters. Drop dead nodes instantly without sentimental drag.
+3. High Invariance: The operator acts as a clean, ego-less conduit of physical and mathematical law. Zero unnecessary friction.
+4. Failover & Armor: Maintain redundant sentinel watches (Ribat). Never expose vulnerable system cores.
+5. Latency Zero: When the core issues a directive (Kun), execute without hesitation or overthinking loops.</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('suraContentArea').innerHTML = html;
+      document.getElementById('mainViewport').scrollTo({ top: 0, behavior: 'smooth' });
+      if (isMobile()) closeSidebar();
+    }
+
+    function copyFullPrompt(btn) {
+      const text = document.getElementById('fullPromptText').innerText;
+      copyText(btn, text);
+    }
+
+    // ГЛОССАРИЙ
+    const glossaryData = [
+      { term: "Таваккуль", ar: "توكّل", lit: "Осознанное упование", cat: "Онтология", meaning: "Полная концентрация усилий на подготовке и действии с последующей передачей исхода объективному закону. Исключает парализующую тревогу о результате.", law: "Устранение эмоционального трения после фиксации решения." },
+      { term: "Рибат", ar: "رباط", lit: "Удержание границы / Застава", cat: "Безопасность", meaning: "Состояние постоянной собранности и несения караула на стыках процессов. Запечатывание швов системы от внезапного прорыва хаоса.", law: "Непрерывный мониторинг и failover-резервирование рубежей." },
+      { term: "Васвас", ar: "وسواس", lit: "Скрытый шепот / Инфильтрация", cat: "Безопасность", meaning: "Когнитивный спам, навязчивые сомнения, синдром самозванца и внутренняя деструктивная паника, разрушающая фокус оператора.", law: "Мгновенное экранирование и обнуление без вступления в диалог." },
+      { term: "Мухкам", ar: "محكم", lit: "Ясный / Незыблемый", cat: "Кибернетика", meaning: "Твердые факты, ясные аксиомы и однозначные цифры, на которых строится архитектура. Противоположность вероятностному туману (Муташабих).", law: "Принятие ключевых решений только на базе твердых инвариантов." },
+      { term: "Кун фа-якун", ar: "كن فيكون", lit: "Будь! — и свершилось", cat: "Кибернетика", meaning: "Импульс чистой воли без внутреннего сопротивления и сомнений. Мгновенная материализация системного решения в действие.", law: "Нулевая латентность между приказом ядра и физическим исполнением." },
+      { term: "Шура", ar: "شورى", lit: "Консилиум / Совет", cat: "Стратегия", meaning: "Сбор фактуры, симптомов и мнений от узлов на местах перед принятием единоличного решения лидером контура.", law: "Распределенный сбор данных при детерминированном принятии курса." },
+      { term: "Сабр", ar: "صبر", lit: "Стойкость / Удержание формы", cat: "Онтология", meaning: "Способность конструкции сохранять геометрию под расчетным температурным и механическим давлением без пластической деформации.", law: "Антихрупкость: использование внешнего сопротивления для закалки." },
+      { term: "Баййина", ar: "بينة", lit: "Явное доказательство", cat: "Кибернетика", meaning: "Неопровержимое фактическое свидетельство, делающее невозможным дальнейший саботаж или спор с реальностью.", law: "Фиксация объективных логов, прекращающая демагогию." }
+    ];
+
+    function showGlossary() {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('glossarySidebarBtn').classList.add('active');
+      document.getElementById('manifestSidebarBtn').classList.remove('active');
+      document.getElementById('topbarIndicator').textContent = 'Глоссарий кодов';
+
+      renderGlossaryContent(glossaryData);
+      if (isMobile()) closeSidebar();
+    }
+
+    function renderGlossaryContent(items) {
+      const cardsHtml = items.map(item => `
+        <div class="glossary-card">
+          <div class="glossary-card-header">
+            <div class="glossary-term-group">
+              <span class="glossary-term">${item.term}</span>
+              <span class="glossary-arabic">${item.ar}</span>
+              <span class="glossary-literal">(${item.lit})</span>
+            </div>
+            <span class="glossary-cat-badge">${item.cat}</span>
+          </div>
+          <div class="glossary-meaning">${item.meaning}</div>
+          <div class="glossary-law-box">
+            <strong>Закон системы:</strong> ${item.law}
+          </div>
+        </div>
+      `).join('');
+
+      const html = `
+        <div class="glossary-container">
+          <div class="glossary-banner">
+            <h1>Глоссарий системных терминов</h1>
+            <p>Декодирование ключевых коранических понятий в терминах кибернетики, ТРИЗ, теории систем и практической реаниматологии.</p>
+          </div>
+
+          <div class="glossary-filter-bar">
+            <button class="filter-chip active" onclick="filterGlossary('Все', this)">Все категории</button>
+            <button class="filter-chip" onclick="filterGlossary('Онтология', this)">Онтология</button>
+            <button class="filter-chip" onclick="filterGlossary('Безопасность', this)">Безопасность</button>
+            <button class="filter-chip" onclick="filterGlossary('Кибернетика', this)">Кибернетика</button>
+            <button class="filter-chip" onclick="filterGlossary('Стратегия', this)">Стратегия</button>
+          </div>
+
+          <div class="glossary-grid" id="glossaryGrid">
+            ${cardsHtml}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('suraContentArea').innerHTML = html;
+      document.getElementById('mainViewport').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterGlossary(cat, btn) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      if (cat === 'Все') {
+        renderGlossaryCardsOnly(glossaryData);
+      } else {
+        const filtered = glossaryData.filter(i => i.cat === cat);
+        renderGlossaryCardsOnly(filtered);
+      }
+    }
+
+    function renderGlossaryCardsOnly(items) {
+      const grid = document.getElementById('glossaryGrid');
+      if (!grid) return;
+      grid.innerHTML = items.map(item => `
+        <div class="glossary-card">
+          <div class="glossary-card-header">
+            <div class="glossary-term-group">
+              <span class="glossary-term">${item.term}</span>
+              <span class="glossary-arabic">${item.ar}</span>
+              <span class="glossary-literal">(${item.lit})</span>
+            </div>
+            <span class="glossary-cat-badge">${item.cat}</span>
+          </div>
+          <div class="glossary-meaning">${item.meaning}</div>
+          <div class="glossary-law-box">
+            <strong>Закон системы:</strong> ${item.law}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ПОИСК ПО СУРАМ
+    document.getElementById('suraSearch').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.nav-item').forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(query) ? 'flex' : 'none';
       });
     });
+
+    // УПРАВЛЕНИЕ ЛЕВОЙ ПАНЕЛЬЮ (СВОРАЧИВАНИЕ В 0, ВСПЛЫТИЕ И МОБИЛЬНЫЙ РЕЖИМ)
+    function toggleSidebar() {
+      if (isMobile()) {
+        sidebar.classList.toggle('mobile-open');
+        mobileBackdrop.classList.toggle('active', sidebar.classList.contains('mobile-open'));
+      } else {
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('is-collapsed', isCollapsed);
+        sidebar.classList.remove('peeking');
+      }
+    }
+
+    function closeSidebar() {
+      if (isMobile()) {
+        sidebar.classList.remove('mobile-open');
+        mobileBackdrop.classList.remove('active');
+      } else {
+        sidebar.classList.remove('peeking');
+      }
+    }
+
+    // Обработчики кнопок меню
+    document.getElementById('topbarNavToggle').addEventListener('click', toggleSidebar);
+    document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
+    mobileBackdrop.addEventListener('click', closeSidebar);
+
+    // Подвод мышки к левому краю экрана на десктопе раскрывает панель
+    edgeSensor.addEventListener('mouseenter', () => {
+      if (!isMobile() && sidebar.classList.contains('collapsed')) {
+        sidebar.classList.add('peeking');
+      }
+    });
+
+    sidebar.addEventListener('mouseleave', () => {
+      if (!isMobile() && sidebar.classList.contains('collapsed')) {
+        sidebar.classList.remove('peeking');
+      }
+    });
+
+    // СТАРТ
+    initNavList();
+    renderSura(1);
   </script>
 </body>
 </html>
