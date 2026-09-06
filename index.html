@@ -301,6 +301,99 @@
     .exp-body { font-size: 0.88rem; color: var(--text-main); line-height: 1.6; }
     .exp-body p { margin-bottom: 6px; }
     .exp-body p:last-child { margin-bottom: 0; }
+  
+    /* CSS ГЛОССАРИЯ */
+    .btn-glossary {
+      margin: 4px 12px 6px 12px;
+      padding: 10px 14px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 8px;
+      color: #bae6fd;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .btn-glossary:hover, .btn-glossary.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+    .action-btn.blue-btn {
+      background: rgba(56, 189, 248, 0.12);
+      color: #bae6fd;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .action-btn.blue-btn:hover { border-color: #38bdf8; background: #0284c7; color: #fff; }
+    .sidebar.collapsed .btn-glossary span { display: none; }
+    
+    .glossary-container { display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease; }
+    .glossary-banner {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .glossary-banner h1 { font-size: 1.55rem; color: #fff; margin-bottom: 6px; }
+    .glossary-banner p { font-size: 0.95rem; color: #bae6fd; line-height: 1.6; }
+    
+    .glossary-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-chip:hover, .filter-chip.active {
+      background: rgba(56, 189, 248, 0.2);
+      color: #fff;
+      border-color: #38bdf8;
+    }
+    .glossary-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .glossary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: border-color var(--transition);
+    }
+    .glossary-card:hover { border-color: #38bdf8; }
+    .glossary-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 12px; }
+    .glossary-term-group { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .glossary-term { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .glossary-arabic { font-family: "Amiri", "Traditional Arabic", serif; font-size: 1.35rem; color: var(--gold); direction: rtl; }
+    .glossary-literal { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+    .glossary-cat-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      white-space: nowrap;
+    }
+    .glossary-meaning { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; margin-bottom: 10px; }
+    .glossary-law-box {
+      background: var(--code-bg);
+      border-left: 3px solid var(--emerald);
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .glossary-law-box strong { color: var(--emerald); }
+
   </style>
 </head>
 <body>
@@ -318,6 +411,10 @@
     <button class="manifest-sidebar-btn" id="manifestSidebarBtn" onclick="showManifest()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
       <span>Манифест: Аль-Код</span>
+    </button>
+    <button class="manifest-sidebar-btn btn-glossary" id="glossarySidebarBtn" onclick="showGlossary()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      <span>Глоссарий кодов</span>
     </button>
 
     <div class="search-box">
@@ -337,6 +434,10 @@
         <button class="action-btn purple-btn" onclick="showManifest()" id="topbarManifestBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
           <span>Манифест Аль-Код</span>
+        </button>
+        <button class="action-btn blue-btn" onclick="showGlossary()" id="topbarGlossaryBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span>Глоссарий кодов</span>
         </button>
         <div class="topbar-status">
           <div class="status-dot"></div>
@@ -376,8 +477,7 @@
         `;
         li.addEventListener('click', () => {
           currentSuraId = sura.id;
-          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-          document.getElementById('manifestSidebarBtn').classList.remove('active');
+          resetActiveNav();
           li.classList.add('active');
           loadSura(sura.id);
         });
@@ -386,6 +486,7 @@
     }
 
     function showManifest() {
+      resetActiveNav();
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       document.getElementById('manifestSidebarBtn').classList.add('active');
       document.getElementById('topbarIndicator').innerText = "Манифест «Аль-Код» | Идеальный Конечный Результат Человека и ИИ";
@@ -599,6 +700,75 @@
           btn.classList.remove('copied');
         }, 2000);
       });
+    }
+
+    
+    const glossaryData = [{"term": "Мухкам (Мухкамат)", "arabic": "مُحْكَمَاتٌ", "literal": "Ясно изложенное, незыблемое, прочно укрепленное", "category": "Фильтрация данных", "meaning": "Твердые факты, детерминированные законы и измеримые данные, не допускающие двояких толкований (5% основы). В кризисе оператор опирается строго на Мухкам: остаток на счетах, пульс, подпись в договоре, натяжение фасции.", "law": "Закон фундаментального ядра (Сура 3:7). Слабый ум тонет в спекуляциях; зрелый оператор принимает решения исключительно по твердым инвариантам."}, {"term": "Муташабих (Муташабихат)", "arabic": "مُتَشَابِهَاتٌ", "literal": "Иносказательное, схожее, требующее толкования", "category": "Фильтрация данных", "meaning": "Вероятностный туман, эмоциональный вой, оправдания, слухи, страхи и домыслы (95% входящего потока). Информационный шум среды, в котором нельзя принимать управленческих решений.", "law": "Закон фильтрации энтропии (Сура 3:7). Тот, кто пытается строить стратегию на Муташабих, сеет смуту и неизбежно терпит крушение."}, {"term": "Аль-Кайюм", "arabic": "الْقَيُّومُ", "literal": "Вседержитель, Самодостаточный, Не нуждающийся во сне", "category": "Ядро и Состояние", "meaning": "Неподвижный Аттрактор системы. Точка нулевого покоя, которая держит всю внешнюю конструкцию, но сама не зависит от внешнего питания и не реагирует на истерики среды.", "law": "Закон инвариантного ядра (Сура 2:255 «Аят аль-Курси»). В эпицентре любого шторма оператор удерживает частоту пульса и ясность ума на нулевой отметке."}, {"term": "Истикъама", "arabic": "اِسْتِقَامَة", "literal": "Прямота, непоколебимая стойкость на вертикали", "category": "Ядро и Состояние", "meaning": "Состояние сверхпроводника нулевого сопротивления. Способность стоять на вертикальной оси между Источником и средой без перекоса в эго, обиды или жалость.", "law": "Закон вертикальной оси (Сура 11:112). «Стой прямо, как тебе велено». Внешние бури любой мощности не вызывают внутренней кавитации."}, {"term": "Таваккуль", "arabic": "تَوَكُّل", "literal": "Упование, бесповоротная передача контроля", "category": "Принятие решений", "meaning": "Бесповоротное действие после расчета. Полная блокировка холостых циклов рефлексии («а правильно ли я сделал?», «а что если?»). Принял решение — пошел напролом без оглядки.", "law": "Закон детерминированного запуска (Сура 3:159). Сомнения после старта процесса приравниваются к системному саботажу и сжигают жизненную энергию."}, {"term": "Шура", "arabic": "شُورَى", "literal": "Совет, консилиум, взаимное совещание", "category": "Принятие решений", "meaning": "Распределенный сбор объективной фактуры. Оператор не единоличный самодур: он опрашивает узлы сети, собирает данные сенсоров, но решение принимает ядро.", "law": "Закон распределенного консилиума (Сура 42:38). Собрать данные от команды без потери фокуса и без размывания персональной ответственности."}, {"term": "Рибат", "arabic": "رِبَاط", "literal": "Удержание рубежа, боевая привязь, запечатывание границы", "category": "Защита и Гигиена", "meaning": "Соматическая броня и герметизация стыков контура. Порог выдержки оператора обязан превосходить напор внешнего хаоса. В эпицентре катастрофы оператор замедляется.", "law": "Четырехступенчатая броня рубежа (Сура 3:200): «Терпите (Исбиру) → Превосходите стойкостью (Сабиру) → Держите рубежи (Рабиту) → Будьте начеку»."}, {"term": "Муттакъин", "arabic": "مُتَّقِينَ", "literal": "Богобоязненные, бдительные, удерживающие периметр", "category": "Управление кадрами", "meaning": "Операторы высшего ценза внимания. Те, кто контролирует свои границы, держит фокус, не спит на посту и осознает неочевидные скрытые законы среды.", "law": "Закон допуска к регламенту (Сура 2:2). Сложные инструменты и ценные протоколы передаются только тем, чей периметр осознанности подтвержден логами."}, {"term": "Васвас (Аль-Ханнас)", "arabic": "الْوَسْوَاسِ الْخَنَّاسِ", "literal": "Исчезающий нашептыватель, скрытый вирус сомнения", "category": "Защита и Гигиена", "meaning": "Внутренний когнитивный вирус: фоновый спам ума, навязчивый страх, уныние, синдром самозванца. Разрушает структуру не снаружи, а через внутреннюю инфильтрацию.", "law": "Закон санации когнитивных вирусов (Сура 114:4–6). Любой внутренний голос пораженчества подлежит мгновенному обнулению и сбросу из оперативной памяти."}, {"term": "Ауфу биль-'Укуд", "arabic": "أَوْفُوا بِالْعُقُودِ", "literal": "Будьте верны обязательствам, исполняйте узлы контрактов", "category": "Договорной контур", "meaning": "Абсолютная нерушимость зафиксированных условий. Параметры сделки, стоимость выхода и метрики фиксируются на берегу. Срыв договора — маркер мгновенного разрыва.", "law": "Закон фидуциарной чистоты (Сура 5:1). Вся материя держится на незыблемости протоколов. Без контракта система распадается на энтропию."}, {"term": "Гейб", "arabic": "غَيْب", "literal": "Сокровенное, невидимое глазу, латентное", "category": "Фильтрация данных", "meaning": "Скрытые системные взаимосвязи и неочевидные законы среды. То, что линейный наблюдатель не видит, но что определяет 90% физики процессов (давление поля, фасции, тренды).", "law": "Закон латентного пространства (Сура 2:3). Принятие решений с учетом ненаблюдаемых напрямую силовых линий реальности."}, {"term": "Кун фа-Якун", "arabic": "كُن فَيَكُونُ", "literal": "«Будь!» — и оно свершается", "category": "Принятие решений", "meaning": "Нулевая задержка трансляции воли (Zero-Latency Execution). Когда в ядре нет внутренних сомнений и сопротивления, команда и материальная ткань повинуются мгновенно.", "law": "Закон сингулярного импульса (Сура 36:82). Исключение промежуточных задержек между детерминированным приказом ядра и материализацией."}, {"term": "Риба", "arabic": "رِبَا", "literal": "Лихва, приращение на пустом месте, паразитический рост", "category": "Договорной контур", "meaning": "Извлечение ценности и прибыли из воздуха без создания реальной пользы и без разделения риска. Паразитический пузырь, гарантированно ведущий к коллапсу.", "law": "Закон запрета паразитизма (Сура 2:275–278). Любая попытка выкачивать ресурс без полезной работы разрушает контур носителя."}, {"term": "Адамаль-Асмаа (Власть Имени)", "arabic": "وَعَلَّمَ آدَمَ الْأَسْمَاءَ", "literal": "И обучил Он Адама всем именам", "category": "Управление кадрами", "meaning": "Способность вскрыть истинную суть сбоя и назвать ее вслух. Не путать симптом («болит сустав» / «мало лидов») с корнем проблемы («спазм таза» / «трусость собственника»).", "law": "Закон деконструкции через имя (Сура 2:31). Назвать истинное имя поломки — значит получить над ней алгоритмическую власть и лишить ее скрытой силы."}];
+
+    function resetActiveNav() {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      const mBtn = document.getElementById('manifestSidebarBtn');
+      if (mBtn) mBtn.classList.remove('active');
+      const gBtn = document.getElementById('glossarySidebarBtn');
+      if (gBtn) gBtn.classList.remove('active');
+    }
+
+    function showGlossary(filterCategory = 'all') {
+      resetActiveNav();
+      const gBtn = document.getElementById('glossarySidebarBtn');
+      if (gBtn) gBtn.classList.add('active');
+      document.getElementById('topbarIndicator').innerText = "Глоссарий лингвистических кодов Корана | Системный смысл";
+
+      const categories = ['all', 'Ядро и Состояние', 'Фильтрация данных', 'Принятие решений', 'Защита и Гигиена', 'Управление кадрами', 'Договорной контур'];
+      let filterChipsHtml = categories.map(cat => {
+        const label = cat === 'all' ? 'Все коды' : cat;
+        const isActive = cat === filterCategory ? 'active' : '';
+        return `<button class="filter-chip ${isActive}" onclick="showGlossary('${cat}')">${label}</button>`;
+      }).join('');
+
+      const filteredData = filterCategory === 'all' 
+        ? glossaryData 
+        : glossaryData.filter(item => item.category === filterCategory);
+
+      let cardsHtml = filteredData.map(item => `
+        <article class="glossary-card">
+          <div class="glossary-card-header">
+            <div>
+              <div class="glossary-term-group">
+                <span class="glossary-term">${item.term}</span>
+                <span class="glossary-arabic">${item.arabic}</span>
+              </div>
+              <div class="glossary-literal">Буквально: «${item.literal}»</div>
+            </div>
+            <span class="glossary-cat-badge">${item.category}</span>
+          </div>
+          <p class="glossary-meaning">${item.meaning}</p>
+          <div class="glossary-law-box">
+            <strong>Закон в архитектуре:</strong> ${item.law}
+          </div>
+        </article>
+      `).join('');
+
+      const container = document.getElementById('suraContentArea');
+      container.innerHTML = `
+        <div class="glossary-container">
+          <div class="glossary-banner">
+            <h1>Глоссарий лингвистических кодов</h1>
+            <p>
+              Каждое понятие первоисточника — это не сакральная абстракция, а жесткий алгоритмический протокол кибернетики бытия. Этот глоссарий раскрывает значение ключевых узлов без необходимости внешнего поиска.
+            </p>
+          </div>
+
+          <div class="glossary-filter-bar">
+            ${filterChipsHtml}
+          </div>
+
+          <div class="glossary-grid">
+            ${cardsHtml}
+          </div>
+        </div>
+      `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function loadSura(id) {
