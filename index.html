@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Матрица системных протоколов | 114 Сур Корана</title>
+  <style>
+    :root {
+      --bg-base: #090d14;
+      --bg-surface: #0f1523;
+      --bg-card: #151d2e;
+      --bg-hover: #1c273d;
+      --border: #223047;
+      --border-focus: #3b82f6;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.12);
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.12);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+      --code-bg: #0b101b;
+      --font-mono: "Fira Code", Consolas, Monaco, monospace;
+      --sidebar-w: 320px;
+      --sidebar-collapsed-w: 72px;
+      --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: var(--sidebar-w);
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width var(--transition);
+      z-index: 100;
+    }
+    .sidebar.collapsed { width: var(--sidebar-collapsed-w); }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand-group { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
+    .brand-title { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-main); }
+    .brand-sub { font-size: 0.72rem; color: var(--text-dim); }
+    .sidebar.collapsed .brand-group,
+    .sidebar.collapsed .search-box,
+    .sidebar.collapsed .nav-text-group,
+    .sidebar.collapsed .nav-badge,
+    .sidebar.collapsed .sidebar-footer { display: none; }
+    .toggle-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .toggle-btn:hover { color: #fff; border-color: var(--emerald); background: var(--bg-hover); }
+    .search-box { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      outline: none;
+      transition: var(--transition);
+    }
+    .search-input:focus { border-color: var(--border-focus); }
+    .nav-list { list-style: none; padding: 10px 8px; overflow-y: auto; flex-grow: 1; }
+    .nav-item {
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
+    .nav-item.active { background: var(--emerald-glow); border-color: var(--emerald); color: #fff; }
+    .nav-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .nav-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--emerald);
+      flex-shrink: 0;
+    }
+    .nav-item.active .nav-num { background: var(--emerald); color: #000; }
+    .nav-text-group { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
+    .nav-name { font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+    .nav-meta { font-size: 0.7rem; color: var(--text-dim); }
+    .nav-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .nav-badge.status-ready { color: var(--emerald); border-color: rgba(16, 185, 129, 0.4); background: var(--emerald-glow); }
+    .sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--text-dim); display: flex; justify-content: space-between; }
+    .main-viewport { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    .topbar {
+      padding: 14px 28px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      gap: 16px;
+    }
+    .topbar-info { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+    .topbar-controls { display: flex; align-items: center; gap: 12px; }
+    .import-btn {
+      background: var(--emerald);
+      color: #000;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+    .import-btn:hover { background: #059669; color: #fff; }
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--emerald);
+      background: var(--emerald-glow);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-dot { width: 7px; height: 7px; background: var(--emerald); border-radius: 50%; box-shadow: 0 0 8px var(--emerald); }
+    .content-container { max-width: 1080px; margin: 0 auto; padding: 28px 24px 64px 24px; width: 100%; }
+    .sura-banner {
+      background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-card) 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .sura-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .sura-header-title h1 { font-size: 1.55rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .sura-header-meta { font-size: 0.92rem; color: var(--gold); font-weight: 500; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .action-btn {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .action-btn:hover { border-color: var(--gold); background: var(--gold-glow); }
+    .action-btn.obsidian-btn:hover { border-color: var(--emerald); background: var(--emerald-glow); }
+    .source-panel { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+    .source-panel.open { display: block; }
+    .source-card { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+    .section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 8px; }
+    .arabic-display { font-size: 1.35rem; line-height: 2.2; direction: rtl; text-align: right; color: #f8fafc; font-family: "Amiri", "Traditional Arabic", serif; margin-bottom: 12px; }
+    .translation-display { font-size: 0.92rem; color: var(--text-muted); border-left: 2px solid var(--gold); padding-left: 12px; }
+    .summary-display { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
+    .nodes-container { display: flex; flex-direction: column; gap: 18px; }
+    .node-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color var(--transition); }
+    .node-card:hover { border-color: var(--border-focus); }
+    .node-header { padding: 16px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .node-title-group { display: flex; align-items: center; gap: 12px; }
+    .node-badge { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: var(--bg-base); border: 1px solid var(--border); color: var(--emerald); white-space: nowrap; }
+    .node-title { font-size: 1rem; font-weight: 600; color: #fff; }
+    .node-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .node-ayat-source { background: var(--code-bg); border: 1px dashed var(--border); border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; }
+    .node-ayat-source summary { cursor: pointer; color: var(--text-dim); font-weight: 600; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .node-ayat-source summary:hover { color: var(--text-muted); }
+    .node-ayat-content { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    .triad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 768px) { .triad-grid { grid-template-columns: 1fr; } }
+    .triad-cell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .triad-header { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+    .triad-cell.law .triad-header { color: var(--gold); }
+    .triad-cell.medic .triad-header { color: var(--emerald); }
+    .triad-cell p { font-size: 0.88rem; color: var(--text-main); line-height: 1.5; }
+    .prompt-box { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+    .prompt-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .copy-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--transition);
+    }
+    .copy-btn:hover { color: #fff; border-color: var(--emerald); background: var(--bg-hover); }
+    .copy-btn.copied { background: var(--emerald); color: #000; font-weight: 700; border-color: var(--emerald); }
+    .prompt-text { font-family: var(--font-mono); font-size: 0.82rem; color: #93c5fd; white-space: pre-wrap; word-break: break-word; line-height: 1.45; }
+    .checklist-box { margin-top: 32px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .checklist-box h3 { font-size: 1.1rem; color: var(--gold); margin-bottom: 16px; }
+    .checklist-items { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .checklist-items li { font-size: 0.9rem; display: flex; align-items: flex-start; gap: 12px; color: var(--text-main); }
+    .checklist-idx { color: var(--gold); font-weight: 700; font-family: var(--font-mono); }
+    .empty-state {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      text-align: center;
+      padding: 60px 24px;
+      background: var(--bg-card);
+    }
+    .empty-title { font-size: 1.1rem; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+    .empty-desc { font-size: 0.9rem; color: var(--text-muted); max-width: 540px; margin: 0 auto 20px auto; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-group">
+        <span class="brand-title">Коранический код</span>
+        <span class="brand-sub">114 архитектурных модулей</span>
+      </div>
+      <button class="toggle-btn" id="sidebarToggle" title="Свернуть / развернуть меню">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="suraSearch" class="search-input" placeholder="Поиск суры по номеру или имени...">
+    </div>
+    <ul class="nav-list" id="surasNavList"></ul>
+    <div class="sidebar-footer">
+      <span id="loadedCount">Загружено: 0 / 114</span>
+      <span>Чистый каркас v3.3</span>
+    </div>
+  </aside>
+
+  <main class="main-viewport">
+    <header class="topbar">
+      <div class="topbar-info" id="topbarIndicator">Оболочка готова к импорту данных</div>
+      <div class="topbar-controls">
+        <input type="file" id="sprintFileInput" accept=".json" style="display: none;">
+        <button class="import-btn" onclick="document.getElementById('sprintFileInput').click()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span>Импорт спринта (.json)</span>
+        </button>
+        <div class="topbar-status">
+          <div class="status-dot"></div>
+          <span id="systemStatusText">Каркас активен</span>
+        </div>
+      </div>
+    </header>
+    <div class="content-container" id="suraContentArea"></div>
+  </main>
+
+  <script>
+    const surasMeta = [
+      { id: 1, name: "Аль-Фатиха", ru: "Открывающая", ayats: 7 },
+      { id: 2, name: "Аль-Бакара", ru: "Корова", ayats: 286 },
+      { id: 3, name: "Али Имран", ru: "Семейство Имрана", ayats: 200 },
+      { id: 4, name: "Ан-Ниса", ru: "Женщины", ayats: 176 },
+      { id: 5, name: "Аль-Маида", ru: "Трапеза", ayats: 120 },
+      { id: 6, name: "Аль-Ан'ам", ru: "Скот", ayats: 165 },
+      { id: 7, name: "Аль-А'раф", ru: "Преграды", ayats: 206 },
+      { id: 8, name: "Аль-Анфаль", ru: "Трофеи", ayats: 75 },
+      { id: 9, name: "Ат-Тауба", ru: "Покаяние", ayats: 129 },
+      { id: 10, name: "Юнус", ru: "Иона", ayats: 109 },
+      { id: 11, name: "Худ", ru: "Худ", ayats: 123 },
+      { id: 12, name: "Юсуф", ru: "Иосиф", ayats: 111 },
+      { id: 13, name: "Ар-Ра'д", ru: "Гром", ayats: 43 },
+      { id: 14, name: "Ибрахим", ru: "Авраам", ayats: 52 },
+      { id: 15, name: "Аль-Хиджр", ru: "Хиджр", ayats: 99 },
+      { id: 16, name: "Ан-Нахль", ru: "Пчелы", ayats: 128 },
+      { id: 17, name: "Аль-Исра", ru: "Ночной перенос", ayats: 111 },
+      { id: 18, name: "Аль-Кахф", ru: "Пещера", ayats: 110 },
+      { id: 19, name: "Марьям", ru: "Мария", ayats: 98 },
+      { id: 20, name: "Та Ха", ru: "Та Ха", ayats: 135 },
+      { id: 21, name: "Аль-Анбийа", ru: "Пророки", ayats: 112 },
+      { id: 22, name: "Аль-Хаджж", ru: "Паломничество", ayats: 78 },
+      { id: 23, name: "Аль-Му'минун", ru: "Верующие", ayats: 118 },
+      { id: 24, name: "Ан-Нур", ru: "Свет", ayats: 64 },
+      { id: 25, name: "Аль-Фуркан", ru: "Различение", ayats: 77 },
+      { id: 26, name: "Аш-Шу'ара", ru: "Поэты", ayats: 227 },
+      { id: 27, name: "Ан-Намль", ru: "Муравьи", ayats: 93 },
+      { id: 28, name: "Аль-Касас", ru: "Повествование", ayats: 88 },
+      { id: 29, name: "Аль-'Анкабут", ru: "Паук", ayats: 69 },
+      { id: 30, name: "Ар-Рум", ru: "Римляне", ayats: 60 },
+      { id: 31, name: "Лукман", ru: "Лукман", ayats: 34 },
+      { id: 32, name: "Ас-Саджда", ru: "Земной поклон", ayats: 30 },
+      { id: 33, name: "Аль-Ахзаб", ru: "Союзники", ayats: 73 },
+      { id: 34, name: "Саба", ru: "Сава", ayats: 54 },
+      { id: 35, name: "Фатыр", ru: "Творец", ayats: 45 },
+      { id: 36, name: "Йа Син", ru: "Йа Син", ayats: 83 },
+      { id: 37, name: "Ас-Саффат", ru: "Выстроившиеся в ряды", ayats: 182 },
+      { id: 38, name: "Сад", ru: "Сад", ayats: 88 },
+      { id: 39, name: "Аз-Зумар", ru: "Толпы", ayats: 75 },
+      { id: 40, name: "Гафир", ru: "Прощающий", ayats: 85 },
+      { id: 41, name: "Фуссылят", ru: "Разъяснены", ayats: 54 },
+      { id: 42, name: "Аш-Шура", ru: "Совет", ayats: 53 },
+      { id: 43, name: "Аз-Зухруф", ru: "Украшения", ayats: 89 },
+      { id: 44, name: "Ад-Духан", ru: "Дым", ayats: 59 },
+      { id: 45, name: "Аль-Джасийа", ru: "Коленопреклоненная", ayats: 37 },
+      { id: 46, name: "Аль-Ахкаф", ru: "Барханы", ayats: 35 },
+      { id: 47, name: "Мухаммад", ru: "Мухаммад", ayats: 38 },
+      { id: 48, name: "Аль-Фатх", ru: "Победа", ayats: 29 },
+      { id: 49, name: "Аль-Худжурат", ru: "Комнаты", ayats: 18 },
+      { id: 50, name: "Каф", ru: "Каф", ayats: 45 },
+      { id: 51, name: "Аз-Зарийат", ru: "Рассеивающие прах", ayats: 60 },
+      { id: 52, name: "Ат-Тур", ru: "Гора", ayats: 49 },
+      { id: 53, name: "Ан-Наджм", ru: "Звезда", ayats: 62 },
+      { id: 54, name: "Аль-Камар", ru: "Месяц", ayats: 55 },
+      { id: 55, name: "Ар-Рахман", ru: "Милостивый", ayats: 78 },
+      { id: 56, name: "Аль-Ваки'а", ru: "Событие", ayats: 96 },
+      { id: 57, name: "Аль-Хадид", ru: "Железо", ayats: 29 },
+      { id: 58, name: "Аль-Муджадила", ru: "Препирающаяся", ayats: 22 },
+      { id: 59, name: "Аль-Хашр", ru: "Сбор", ayats: 24 },
+      { id: 60, name: "Аль-Мумтахана", ru: "Испытуемая", ayats: 13 },
+      { id: 61, name: "Ас-Сафф", ru: "Ряды", ayats: 14 },
+      { id: 62, name: "Аль-Джуму'а", ru: "Пятница", ayats: 11 },
+      { id: 63, name: "Аль-Мунафикун", ru: "Лицемеры", ayats: 11 },
+      { id: 64, name: "Ат-Тагабун", ru: "Взаимное обделение", ayats: 18 },
+      { id: 65, name: "Ат-Таляк", ru: "Развод", ayats: 12 },
+      { id: 66, name: "Ат-Тахрим", ru: "Запрещение", ayats: 12 },
+      { id: 67, name: "Аль-Мульк", ru: "Власть", ayats: 30 },
+      { id: 68, name: "Аль-Калям", ru: "Письменная трость", ayats: 52 },
+      { id: 69, name: "Аль-Хакка", ru: "Неотвратимое", ayats: 52 },
+      { id: 70, name: "Аль-Ма'аридж", ru: "Ступени", ayats: 44 },
+      { id: 71, name: "Нух", ru: "Ной", ayats: 28 },
+      { id: 72, name: "Аль-Джинн", ru: "Джинны", ayats: 28 },
+      { id: 73, name: "Аль-Муззаммиль", ru: "Закутавшийся", ayats: 20 },
+      { id: 74, name: "Аль-Муддассир", ru: "Завернувшийся", ayats: 56 },
+      { id: 75, name: "Аль-Кыйама", ru: "Воскресение", ayats: 40 },
+      { id: 76, name: "Аль-Инсан", ru: "Человек", ayats: 31 },
+      { id: 77, name: "Аль-Мурсалят", ru: "Посылаемые", ayats: 50 },
+      { id: 78, name: "Ан-Наба", ru: "Весть", ayats: 40 },
+      { id: 79, name: "Ан-Нази'ат", ru: "Исторгающие", ayats: 46 },
+      { id: 80, name: "'Абаса", ru: "Нахмурился", ayats: 42 },
+      { id: 81, name: "Ат-Таквир", ru: "Скручивание", ayats: 29 },
+      { id: 82, name: "Аль-Инфитар", ru: "Раскалывание", ayats: 19 },
+      { id: 83, name: "Аль-Мутаффифин", ru: "Обвешивающие", ayats: 36 },
+      { id: 84, name: "Аль-Иншикак", ru: "Разверзание", ayats: 25 },
+      { id: 85, name: "Аль-Бурудж", ru: "Созвездия", ayats: 22 },
+      { id: 86, name: "Ат-Тарик", ru: "Ночной путник", ayats: 17 },
+      { id: 87, name: "Аль-А'ля", ru: "Всевышний", ayats: 19 },
+      { id: 88, name: "Аль-Гашийа", ru: "Покрывающее", ayats: 26 },
+      { id: 89, name: "Аль-Фаджр", ru: "Заря", ayats: 30 },
+      { id: 90, name: "Аль-Баляд", ru: "Город", ayats: 20 },
+      { id: 91, name: "Аш-Шамс", ru: "Солнце", ayats: 15 },
+      { id: 92, name: "Аль-Ляйль", ru: "Ночь", ayats: 21 },
+      { id: 93, name: "Ад-Духа", ru: "Утро", ayats: 11 },
+      { id: 94, name: "Аш-Шарх", ru: "Раскрытие", ayats: 8 },
+      { id: 95, name: "Ат-Тин", ru: "Смоковница", ayats: 8 },
+      { id: 96, name: "Аль-'Аляк", ru: "Сгусток", ayats: 19 },
+      { id: 97, name: "Аль-Кадр", ru: "Предопределение", ayats: 5 },
+      { id: 98, name: "Аль-Баййина", ru: "Ясное знамение", ayats: 8 },
+      { id: 99, name: "Аз-Зальзаля", ru: "Сотрясение", ayats: 8 },
+      { id: 100, name: "Аль-'Адийат", ru: "Мчащиеся", ayats: 11 },
+      { id: 101, name: "Аль-Кари'а", ru: "Великое бедствие", ayats: 11 },
+      { id: 102, name: "Ат-Такасур", ru: "Страсть к приумножению", ayats: 8 },
+      { id: 103, name: "Аль-'Аср", ru: "Предвечернее время", ayats: 3 },
+      { id: 104, name: "Аль-Хумаза", ru: "Хулитель", ayats: 9 },
+      { id: 105, name: "Аль-Филь", ru: "Слон", ayats: 5 },
+      { id: 106, name: "Курайш", ru: "Курайшиты", ayats: 4 },
+      { id: 107, name: "Аль-Ма'ун", ru: "Мелкая помощь", ayats: 7 },
+      { id: 108, name: "Аль-Каусар", ru: "Изобилие", ayats: 3 },
+      { id: 109, name: "Аль-Кафирун", ru: "Неверующие", ayats: 6 },
+      { id: 110, name: "Ан-Наср", ru: "Помощь", ayats: 3 },
+      { id: 111, name: "Аль-Масад", ru: "Пальмовые волокна", ayats: 5 },
+      { id: 112, name: "Аль-Ихлас", ru: "Очищение веры", ayats: 4 },
+      { id: 113, name: "Аль-Фаляк", ru: "Рассвет", ayats: 5 },
+      { id: 114, name: "Ан-Нас", ru: "Люди", ayats: 6 }
+    ];
+
+    // ЧИСТОЕ ХРАНИЛИЩЕ ДАННЫХ (БЕЗ ЗАШИТЫХ СУР)
+    let surasDetailedData = {};
+
+    // Загрузка из LocalStorage при наличии
+    try {
+      const saved = localStorage.getItem('quran_matrix_store');
+      if (saved) {
+        surasDetailedData = JSON.parse(saved);
+      }
+    } catch(e) {
+      console.warn("Storage error:", e);
+    }
+
+    const navListEl = document.getElementById('surasNavList');
+    let currentSuraId = 1;
+
+    function updateStats() {
+      const count = Object.keys(surasDetailedData).length;
+      document.getElementById('loadedCount').innerText = `Загружено: ${count} / 114`;
+      document.getElementById('systemStatusText').innerText = count > 0 ? `Активно сур: ${count}` : 'Каркас пуст';
+    }
+
+    function renderSidebar(filter = '') {
+      navListEl.innerHTML = '';
+      const term = filter.toLowerCase();
+      surasMeta.forEach(sura => {
+        const matches = sura.name.toLowerCase().includes(term) || sura.ru.toLowerCase().includes(term) || sura.id.toString().includes(term);
+        if (!matches) return;
+        const li = document.createElement('li');
+        li.className = `nav-item ${sura.id === currentSuraId ? 'active' : ''}`;
+        li.dataset.id = sura.id;
+        const isReady = surasDetailedData[sura.id] !== undefined;
+        li.innerHTML = `
+          <div class="nav-left">
+            <div class="nav-num">${sura.id}</div>
+            <div class="nav-text-group">
+              <span class="nav-name">${sura.name} (${sura.ru})</span>
+              <span class="nav-meta">${sura.ayats} аятов</span>
+            </div>
+          </div>
+          <span class="nav-badge ${isReady ? 'status-ready' : ''}">${isReady ? 'Интегрировано' : 'Ожидает'}</span>
+        `;
+        li.addEventListener('click', () => {
+          currentSuraId = sura.id;
+          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          li.classList.add('active');
+          loadSura(sura.id);
+        });
+        navListEl.appendChild(li);
+      });
+      updateStats();
+    }
+
+    function exportToObsidian(id) {
+      const meta = surasMeta.find(s => s.id === id);
+      const data = surasDetailedData[id];
+      if (!data) return;
+      let md = `# Сура ${meta.id}: ${meta.name} (${meta.ru})\n`;
+      md += `*${data.subtitle}*\n\n`;
+      md += `## Первоисточник\n> ${data.translation}\n\n`;
+      md += `## Архитектурный синтез\n${data.summary}\n\n`;
+      md += `## Системные узлы матрицы\n\n`;
+      data.nodes.forEach(n => {
+        md += `### ${n.badge}: ${n.title}\n`;
+        md += `- **Первоисточник:** \`${n.source}\`\n`;
+        md += `- **Закон реальности:** ${n.law}\n`;
+        md += `- **Протокол реаниматолога:** ${n.medic}\n`;
+        md += `- **Промпт для агента:**\n\`\`\`text\n${n.prompt}\n\`\`\`\n\n`;
+      });
+      md += `## Чек-лист самоаудита\n`;
+      data.checklist.forEach((item, idx) => {
+        md += `- [ ] ${(idx+1).toString().padStart(2, '0')}. ${item}\n`;
+      });
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${meta.id.toString().padStart(2, '0')}_${meta.name}.md`;
+      link.click();
+    }
+
+    function loadSura(id) {
+      const meta = surasMeta.find(s => s.id === id);
+      const data = surasDetailedData[id];
+      const container = document.getElementById('suraContentArea');
+      const indicator = document.getElementById('topbarIndicator');
+      indicator.innerText = `Сура ${meta.id}: ${meta.name} (${meta.ru})`;
+
+      if (!data) {
+        container.innerHTML = `
+          <div class="sura-banner">
+            <div class="sura-header-row">
+              <div class="sura-header-title">
+                <h1>Сура ${meta.id}: ${meta.name} («${meta.ru}»)</h1>
+                <div class="sura-header-meta">Слот модуля готов (${meta.ayats} аятов)</div>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state">
+            <div class="empty-title">Данные этой суры еще не импортированы</div>
+            <p class="empty-desc">
+              Этот слот чист. Нажмите кнопку <strong>«Импорт спринта (.json)»</strong> в правом верхнем углу и выберите файл с деконструкцией сур, чтобы заполнить матрицу.
+            </p>
+            <button class="import-btn" style="margin: 0 auto;" onclick="document.getElementById('sprintFileInput').click()">
+              Загрузить спринт
+            </button>
+          </div>
+        `;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let nodesHtml = '';
+      data.nodes.forEach(node => {
+        nodesHtml += `
+          <article class="node-card">
+            <div class="node-header">
+              <div class="node-title-group">
+                <span class="node-badge">${node.badge}</span>
+                <div class="node-title">${node.title}</div>
+              </div>
+            </div>
+            <div class="node-body">
+              <details class="node-ayat-source">
+                <summary><span>Первоисточник: ${node.source}</span> <span>▼</span></summary>
+                <div class="node-ayat-content">${node.source}</div>
+              </details>
+              <div class="triad-grid">
+                <div class="triad-cell law">
+                  <div class="triad-header">Закон реальности</div>
+                  <p>${node.law}</p>
+                </div>
+                <div class="triad-cell medic">
+                  <div class="triad-header">Протокол реаниматолога</div>
+                  <p>${node.medic}</p>
+                </div>
+              </div>
+              <div class="prompt-box">
+                <div class="prompt-top">
+                  <span class="section-label">Промпт для агента</span>
+                  <button class="copy-btn" onclick="copyPrompt(this)">Копировать</button>
+                </div>
+                <div class="prompt-text">${node.prompt}</div>
+              </div>
+            </div>
+          </article>
+        `;
+      });
+
+      let checklistHtml = '';
+      data.checklist.forEach((item, index) => {
+        const idx = (index + 1).toString().padStart(2, '0');
+        checklistHtml += `<li><span class="checklist-idx">${idx}.</span> ${item}</li>`;
+      });
+
+      container.innerHTML = `
+        <div class="sura-banner">
+          <div class="sura-header-row">
+            <div class="sura-header-title">
+              <h1>Сура ${meta.id}: ${meta.name} («${meta.ru}»)</h1>
+              <div class="sura-header-meta">${data.subtitle} (${meta.ayats} аятов / 7 узлов)</div>
+            </div>
+            <div class="header-actions">
+              <button class="action-btn" onclick="toggleSource('source-panel-active')">
+                <span>Первоисточник и синтез</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <button class="action-btn obsidian-btn" onclick="exportToObsidian(${meta.id})" title="Скачать готовый .md файл">
+                <span>Экспорт в Obsidian (.md)</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="source-panel" id="source-panel-active">
+            <div class="source-card">
+              <div class="section-label">Канонический арабский оригинал</div>
+              <div class="arabic-display">${data.arabic}</div>
+              <div class="section-label">Смысловой академический перевод</div>
+              <div class="translation-display">${data.translation}</div>
+            </div>
+            <div class="summary-display">
+              <div class="section-label">Архитектурный синтез</div>
+              ${data.summary}
+            </div>
+          </div>
+        </div>
+
+        <div class="nodes-container">
+          ${nodesHtml}
+        </div>
+
+        <div class="checklist-box">
+          <h3>Чек-лист самоаудита по суре ${meta.name}</h3>
+          <ul class="checklist-items">
+            ${checklistHtml}
+          </ul>
+        </div>
+      `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ИМПОРТ СПРИНТА ЧЕРЕЗ JSON ФАЙЛ
+    document.getElementById('sprintFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          Object.assign(surasDetailedData, imported);
+          localStorage.setItem('quran_matrix_store', JSON.stringify(surasDetailedData));
+          renderSidebar();
+          const firstKey = Object.keys(imported)[0];
+          if (firstKey) {
+            currentSuraId = parseInt(firstKey);
+            loadSura(currentSuraId);
+          }
+          alert(`Успешно импортирован спринт! Загружено сур: ${Object.keys(imported).length}`);
+        } catch(err) {
+          alert('Ошибка чтения файла спринта. Убедитесь, что выбран корректный .json');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('suraSearch').addEventListener('input', (e) => { renderSidebar(e.target.value); });
+    const sidebar = document.getElementById('sidebar');
+    document.getElementById('sidebarToggle').addEventListener('click', () => { sidebar.classList.toggle('collapsed'); });
+    function toggleSource(panelId) { const p = document.getElementById(panelId); if (p) p.classList.toggle('open'); }
+    function copyPrompt(btn) {
+      const pBox = btn.closest('.prompt-box');
+      const txt = pBox.querySelector('.prompt-text').innerText;
+      navigator.clipboard.writeText(txt).then(() => {
+        const old = btn.innerText; btn.innerText = 'Скопировано!'; btn.classList.add('copied');
+        setTimeout(() => { btn.innerText = old; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    renderSidebar();
+    loadSura(1);
+  </script>
+</body>
+</html>
