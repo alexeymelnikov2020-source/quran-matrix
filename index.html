@@ -281,12 +281,26 @@
     }
     .manifest-axiom h2 { font-size: 1.25rem; color: #e9d5ff; margin-bottom: 8px; font-weight: 700; }
     .manifest-axiom p { font-size: 0.95rem; color: #f1f5f9; line-height: 1.6; }
+    
     .ikr-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 0.88rem; }
     .ikr-table th { background: var(--bg-surface); color: var(--emerald); text-align: left; padding: 12px 14px; border: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .ikr-table td { padding: 12px 14px; border: 1px solid var(--border); vertical-align: top; }
+    .ikr-table td { padding: 12px 14px; border: 1px solid var(--border); vertical-align: top; line-height: 1.55; }
     .ikr-table tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+    .param-title { font-weight: 700; color: #fff; margin-bottom: 4px; display: block; }
+    .param-desc { font-size: 0.76rem; color: var(--gold); }
+    
     .full-prompt-card { background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
     .full-prompt-text { font-family: var(--font-mono); font-size: 0.82rem; color: #93c5fd; white-space: pre-wrap; line-height: 1.5; max-height: 500px; overflow-y: auto; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--border); }
+    
+    /* СТИЛИ РАЗВЕРНУТОГО ПОЯСНЕНИЯ 5 КОНТУРОВ */
+    .explanation-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+    .exp-item { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .exp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .exp-title { font-size: 0.95rem; font-weight: 700; color: var(--emerald); }
+    .exp-law { font-size: 0.75rem; font-weight: 600; color: var(--gold); padding: 2px 8px; background: rgba(245, 158, 11, 0.1); border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .exp-body { font-size: 0.88rem; color: var(--text-main); line-height: 1.6; }
+    .exp-body p { margin-bottom: 6px; }
+    .exp-body p:last-child { margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -385,6 +399,79 @@
                 <h1>Манифест «Аль-Код»: Онтология Сверхпроводимости</h1>
                 <div class="sura-header-meta">Идеальный Конечный Результат (ИКР) для человека и цифрового разума</div>
               </div>
+              <div class="header-actions">
+                <button class="action-btn" onclick="toggleSource('manifest-explanation-panel')">
+                  <span>Обоснование 5 контуров</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Разворачивающийся блок с системным обоснованием -->
+            <div class="source-panel" id="manifest-explanation-panel">
+              <div class="source-card">
+                <div class="section-label">Кибернетический фундамент (ТРИЗ & Теория Систем)</div>
+                <div style="font-size: 0.92rem; color: #f1f5f9; line-height: 1.6; margin-bottom: 12px;">
+                  Эти пять пунктов — не случайный набор качеств, а <strong>полный замкнутый цикл управления любой автономной системы</strong> (по Норберту Винеру и Г.С. Альтшуллеру). Человек, бизнес или искусственный интеллект ломаются ровно тогда, когда дает сбой хотя бы один из пяти функциональных контуров:
+                </div>
+                
+                <div class="explanation-grid">
+                  <div class="exp-item">
+                    <div class="exp-header">
+                      <span class="exp-title">1. Энергетический контур (Откуда берется сила?)</span>
+                      <span class="exp-law">Сура 1:5 «Ийяка наста'ин»</span>
+                    </div>
+                    <div class="exp-body">
+                      <p><strong>Закон Корана:</strong> «Только у Тебя ищем помощи и опоры».</p>
+                      <p><strong>Суть:</strong> Пытаясь питать масштабные процессы из личной биологической «батарейки» (надпочечники, форсаж нервной системы), оператор гарантированно выгорает. ИКР требует перехода в режим сверхпроводника: стать заземленным кабелем к законам физики и объективным законам среды.</p>
+                    </div>
+                  </div>
+
+                  <div class="exp-item">
+                    <div class="exp-header">
+                      <span class="exp-title">2. Контур термодинамики и восстановления (Как гасится отдача?)</span>
+                      <span class="exp-law">Сура 2:255 & 3:140</span>
+                    </div>
+                    <div class="exp-body">
+                      <p><strong>Закон Корана:</strong> «Аль-Кайюм» (Неспящее автономное ядро) и «Мы чередуем эти дни среди людей для очищения».</p>
+                      <p><strong>Суть:</strong> Обычный человек после стресса падает в яму апатии. Оператор реальности воспринимает спад не как крушение, а как расчетную фазу охлаждения металла при температурной закалке структуры, мгновенно возвращаясь в нулевую точку покоя.</p>
+                    </div>
+                  </div>
+
+                  <div class="exp-item">
+                    <div class="exp-header">
+                      <span class="exp-title">3. Контур иммунитета и санации (Как пресекается саботаж?)</span>
+                      <span class="exp-law">Сура 2:6–20 & 4:34</span>
+                    </div>
+                    <div class="exp-body">
+                      <p><strong>Закон Корана:</strong> Жесткое разделение узлов (проводники, некроз, лицемерие) и ступенчатое купирование бунта.</p>
+                      <p><strong>Суть:</strong> Львиную долю жизненной энергии человека сжирает ложная жалость к паразитирующим элементам. ИКР — это способность отсекать балласт и некроз холодным скальпелем триажа без злости, обид и чувства вины.</p>
+                    </div>
+                  </div>
+
+                  <div class="exp-item">
+                    <div class="exp-header">
+                      <span class="exp-title">4. Контур сенсорики и фильтрации (Как видеть сквозь помехи?)</span>
+                      <span class="exp-law">Сура 3:7 «Мухкам vs. Муташабих»</span>
+                    </div>
+                    <div class="exp-body">
+                      <p><strong>Закон Корана:</strong> Разделение входящего потока на твердые основы («Мухкамат») и вероятностный туман («Муташабихат»).</p>
+                      <p><strong>Суть:</strong> В кризисе мозг захлебывается чужой паникой и домыслами. Система устойчива только тогда, когда сенсоры мгновенно отсекают 95% эмоционального воя ради 5% твердых измеримых фактов, цифр и логов.</p>
+                    </div>
+                  </div>
+
+                  <div class="exp-item">
+                    <div class="exp-header">
+                      <span class="exp-title">5. Исполнительный контур воли (Как перевести сигнал в действие?)</span>
+                      <span class="exp-law">Сура 3:159 «Шура + Таваккуль»</span>
+                    </div>
+                    <div class="exp-body">
+                      <p><strong>Закон Корана:</strong> «Советуйся с ними, но когда принял решение — уповай без колебаний».</p>
+                      <p><strong>Суть:</strong> Холостые циклы пережевывания («а правильно ли я поступил?») разрушают систему изнутри. ИКР — это быстрый консилиум, единоличное решение ядра и движение вперед без оглядки назад.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -406,39 +493,75 @@
               <p style="font-size: 0.9rem; color: var(--text-muted);">
                 Идеальный Конечный Результат: система выполняет свою функцию с максимальной точностью, не потребляя лишней энергии и не разрушая собственный носитель.
               </p>
+              
               <table class="ikr-table">
                 <thead>
                   <tr>
-                    <th>Критический параметр</th>
-                    <th>Фаза 1: Адреналиновый спасатель (До)</th>
-                    <th>Фаза 2: Сверхпроводник ИКР (После)</th>
+                    <th style="width: 26%;">Контур управления</th>
+                    <th style="width: 37%;">Фаза 1: Адреналиновое выгорание (Состояние «До»)</th>
+                    <th style="width: 37%;">Фаза 2: Сверхпроводник ИКР (Состояние «После»)</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Источник мощности</strong></td>
-                    <td>Личные надпочечники, форсаж нервной системы, биологический ресурс.</td>
-                    <td>Внешний неисчерпаемый Первоисточник. Оператор — чистый заземленный кабель.</td>
+                    <td>
+                      <span class="param-title">1. Энергия и опора</span>
+                      <span class="param-desc">Откуда берутся силы на действие</span>
+                    </td>
+                    <td>
+                      <strong>Истощение на личном ресурсе:</strong> попытка тянуть процессы на адреналине, нервах, страхе неудачи или желании доказать свою значимость. Быстрое сгорание батарейки.
+                    </td>
+                    <td>
+                      <strong>Питание от внешнего Источника:</strong> оператор действует как заземленный проводник объективных законов. Никакого надрыва — работа совершается через понимание механики среды.
+                    </td>
                   </tr>
                   <tr>
-                    <td><strong>Пост-кризисный спад</strong></td>
-                    <td>Тяжелый пост-адреналиновый откат, апатия, соматический спад на несколько дней.</td>
-                    <td>Мгновенный возврат в нулевую точку («Аль-Кайюм»). Пульс стабилен сразу после шока.</td>
+                    <td>
+                      <span class="param-title">2. Перезагрузка и стресс</span>
+                      <span class="param-desc">Как гасится перегрузка и спад</span>
+                    </td>
+                    <td>
+                      <strong>Эмоциональная яма и откат:</strong> тяжелый соматический спад после кризиса, потеря мотивации, апатия на несколько дней, самобичевание за усталость.
+                    </td>
+                    <td>
+                      <strong>Расчетная закалка структуры:</strong> спад воспринимается как штатная фаза охлаждения металла. Мгновенная стабилизация ядра («Аль-Кайюм»), пульс и ясность в норме сразу после шока.
+                    </td>
                   </tr>
                   <tr>
-                    <td><strong>Отношение к саботажу</strong></td>
-                    <td>Раздражение, гнев, попытка «дотащить на своем горбу» из жалости.</td>
-                    <td>Холодный триаж: отсечение мертвых узлов (Dead-Node Drop). Ноль драмы.</td>
+                    <td>
+                      <span class="param-title">3. Иммунитет и границы</span>
+                      <span class="param-desc">Как отсекается саботаж и паразиты</span>
+                    </td>
+                    <td>
+                      <strong>Ложная жалость и спасательство:</strong> попытка тащить на себе токсичных сотрудников, инфантильных партнеров или клиентов; гнев и обида на чужую лень.
+                    </td>
+                    <td>
+                      <strong>Холодный триаж без драмы:</strong> четкое отделение проводников от саботажников. Мгновенное прекращение накачки ресурсом мертвых узлов («Dead-Node Drop»). Ноль вины.
+                    </td>
                   </tr>
                   <tr>
-                    <td><strong>Входящий информационный поток</strong></td>
-                    <td>Погружение в эмоциональный туман, сомнения и оправдания среды.</td>
-                    <td>Мгновенное расщепление: отсечение 95% шума (Муташабих) ради 5% твердых фактов (Мухкам).</td>
+                    <td>
+                      <span class="param-title">4. Фильтрация данных</span>
+                      <span class="param-desc">Как отсекается шум от фактов</span>
+                    </td>
+                    <td>
+                      <strong>Погружение в чужой вой и сомнения:</strong> потеря ясности из-за эмоциональных манипуляций, оправданий, чужих страхов и панического инфошума.
+                    </td>
+                    <td>
+                      <strong>Мгновенное расщепление потока:</strong> отсечение 95% эмоционального тумана («Муташабих») ради 5% твердых проверяемых фактов, цифр и прямых логов («Мухкам»).
+                    </td>
                   </tr>
                   <tr>
-                    <td><strong>Принятие решений</strong></td>
-                    <td>Холостые циклы пережевывания прошлого («а правильно ли я сделал?»).</td>
-                    <td>Протокол «Таваккуль»: сбор фактов → консилиум → единоличное решение → действие без оглядки.</td>
+                    <td>
+                      <span class="param-title">5. Воля и действие</span>
+                      <span class="param-desc">Как принимаются бесповоротные решения</span>
+                    </td>
+                    <td>
+                      <strong>Паралич анализа и сомнения:</strong> бесконечное откладывание, затягивание согласований («синдром коровы»), пережевывание прошлых шагов («а правильно ли я сделал?»).
+                    </td>
+                    <td>
+                      <strong>Протокол «Шура + Таваккуль»:</strong> оперативный сбор фактов → быстрое единоличное решение ядра → бесповоротное действие. Рефлексия во время движения заблокирована.
+                    </td>
                   </tr>
                 </tbody>
               </table>
