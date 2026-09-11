@@ -495,6 +495,8 @@
       gap: 14px;
     }
     .triad-cell {
+      display: flex;
+      flex-direction: column;
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -509,10 +511,10 @@
     }
     .triad-cell.law .triad-header { color: var(--gold); }
     .triad-cell.medic .triad-header { color: var(--emerald); }
-    .triad-cell p { font-size: 0.88rem; color: var(--text-main); line-height: 1.5; }
+    .triad-cell p { margin-bottom: 12px; font-size: 0.88rem; color: var(--text-main); line-height: 1.5; }
     
     .node-subdetails {
-      margin-top: 10px;
+      margin-top: auto;
       padding-top: 8px;
       border-top: 1px dashed var(--border);
     }
